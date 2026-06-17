@@ -28,7 +28,7 @@ interface QuizFormData {
 
 interface QuizFormProps {
   postId: string;
-  initial?: Quiz & { hint_text?: string; hint_url?: string };
+  initial?: Quiz;
   onSave: (data: CreateQuizInput | UpdateQuizInput) => Promise<void>;
   onCancel: () => void;
 }

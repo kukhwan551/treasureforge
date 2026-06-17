@@ -201,7 +201,7 @@ export default function PostEditorPage() {
         if (Math.sqrt(dx * dx + dy * dy) < 10) {
           setSelectedPost(post);
           pendingCoordRef.current = null;
-          setPendingCoord(null);
+          setPendingCoordDisplay(null);
           setDeleteConfirm(false);
           setShowForm(true);
           return;
@@ -210,7 +210,7 @@ export default function PostEditorPage() {
 
       // 새 포스트
       pendingCoordRef.current = { x, y };
-      setPendingCoord({ x, y });
+      setPendingCoordDisplay({ x, y });
       setSelectedPost(null);
       setDeleteConfirm(false);
       setShowForm(true);

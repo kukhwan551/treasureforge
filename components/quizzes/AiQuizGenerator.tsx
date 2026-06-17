@@ -171,7 +171,6 @@ ${specialRequest ? `특별 요청: ${specialRequest}` : ""}
       hint_text:   draft.hint_text ?? "",
       hint_url:    "",
       score:       draft.score ?? 10,
-      order_index: 0,
     };
     onSelect(input);
   }
