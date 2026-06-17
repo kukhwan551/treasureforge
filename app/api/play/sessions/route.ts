@@ -1,0 +1,163 @@
+// app/api/play/sessions/route.ts
+// 플레이어 세션 생성 및 업데이트
+// 비로그인 사용자가 접근하므로 Service Role 키(admin client) 사용
+// 수정: contact(휴대폰/이메일)로 players 테이블 upsert, character_id 저장
+
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+function detectContactType(contact: string): "phone" | "email" {
+  return contact.includes("@") ? "email" : "phone";
+}
+
+// ─────────────────────────────────────────────
+// POST /api/play/sessions — 세션 생성
+// ─────────────────────────────────────────────
+export async function POST(req: NextRequest) {
+  let body: {
+    game_id: string;
+    nickname: string;
+    character_id?: string;
+    contact?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { data: null, error: { message: "잘못된 요청입니다." } },
+      { status: 400 }
+    );
+  }
+
+  if (!body.game_id || !body.nickname?.trim()) {
+    return NextResponse.json(
+      { data: null, error: { message: "게임 ID와 닉네임이 필요합니다." } },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const supabase = createAdminClient();
+
+    // ── 연락처가 있으면 players 테이블에 upsert ──
+    let playerId: string | null = null;
+    const contact = body.contact?.trim();
+    if (contact) {
+      const contactType = detectContactType(contact);
+
+      const { data: existing } = await supabase
+        .from("players")
+        .select("id")
+        .eq("contact", contact)
+        .maybeSingle();
+
+      if (existing) {
+        playerId = existing.id;
+        // 닉네임 최신화
+        await supabase
+          .from("players")
+          .update({ nickname: body.nickname.trim() })
+          .eq("id", existing.id);
+      } else {
+        const { data: created, error: createErr } = await supabase
+          .from("players")
+          .insert({
+            contact,
+            contact_type: contactType,
+            nickname: body.nickname.trim(),
+          })
+          .select("id")
+          .single();
+        if (createErr) {
+          console.error("[sessions POST] player create error", createErr);
+        } else {
+          playerId = created.id;
+        }
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("player_sessions")
+      .insert({
+        game_id:      body.game_id,
+        nickname:     body.nickname.trim(),
+        character_id: body.character_id ?? "explorer",
+        player_id:    playerId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[sessions POST]", error);
+      return NextResponse.json(
+        { data: null, error: { message: error.message } },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ data, error: null }, { status: 201 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "서버 오류가 발생했습니다.";
+    return NextResponse.json(
+      { data: null, error: { message } },
+      { status: 500 }
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// PATCH /api/play/sessions — 세션 업데이트
+// ─────────────────────────────────────────────
+export async function PATCH(req: NextRequest) {
+  let body: {
+    session_id: string;
+    keys?: number;
+    completed_post_ids?: string[];
+    score?: number;
+    finished_at?: string;
+    reward_claimed?: boolean;
+    reward_claimed_at?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { data: null, error: { message: "잘못된 요청입니다." } },
+      { status: 400 }
+    );
+  }
+
+  const { session_id, ...patch } = body;
+  if (!session_id) {
+    return NextResponse.json(
+      { data: null, error: { message: "session_id가 필요합니다." } },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("player_sessions")
+      .update(patch)
+      .eq("id", session_id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[sessions PATCH]", error);
+      return NextResponse.json(
+        { data: null, error: { message: error.message } },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ data, error: null });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "서버 오류가 발생했습니다.";
+    return NextResponse.json(
+      { data: null, error: { message } },
+      { status: 500 }
+    );
+  }
+}
