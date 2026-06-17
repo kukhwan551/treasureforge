@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     const supabase = createAdminClient();
     supabase.from("ad_clicks").insert({
       quiz_id, game_id, session_id, hint_url,
-    }).then(() => {}).catch(() => {});
+    }).then(() => {}, () => {});
   } catch {}
 
   // 광고주 페이지로 리다이렉트
