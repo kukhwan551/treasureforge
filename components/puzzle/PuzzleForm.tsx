@@ -143,6 +143,7 @@ export default function PuzzleForm({ postId, initial, onSaved }: PuzzleFormProps
                 <UploadIcon/>
                 <span className="text-sm">클릭하여 이미지 업로드</span>
                 <span className="text-xs text-[#4a4840]">JPG, PNG, WEBP 지원</span>
+                <span className="text-xs text-[#b89a5a]/70">권장: 정사각형 1200×1200px · 500KB 이하</span>
               </>
             )}
           </button>

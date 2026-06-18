@@ -82,25 +82,49 @@ export default function PuzzleCanvas({
 
   // ── 레이아웃 계산 ──
   function calcLayout(cW: number, cH: number) {
-    // 보드: 왼쪽 60%, 덱: 오른쪽 38%
-    const deckFrac = 0.38;
-    const deckW    = Math.floor(cW * deckFrac) - BOARD_MARGIN;
-    const boardW   = cW - deckW - BOARD_MARGIN * 3;
-    const cellW    = Math.floor(boardW / cols);
-    const cellH    = Math.floor(cellW * (rows / cols < 1 ? 1 : rows / cols));
-    const boardH   = cellH * rows;
-    const boardX   = BOARD_MARGIN;
-    const boardY   = Math.max(BOARD_MARGIN, (cH - boardH) / 2);
+    const isMobilePortrait = cW < cH; // 세로 화면(모바일) 판별
 
-    // 덱: 보드와 같은 cellW/cellH 사용
-    const deckX = boardX + boardW + BOARD_MARGIN * 2;
-    const deckY = Math.max(BOARD_MARGIN, (cH - cellH) / 2);
+    if (isMobilePortrait) {
+      // ── 모바일 세로: 보드 상단(거의 전체 너비), 덱 하단 가로 배치 ──
+      const boardW  = cW - BOARD_MARGIN * 2;
+      const cellW   = Math.floor(boardW / cols);
+      const cellH   = cellW; // 정사각형 셀
+      const boardH  = cellH * rows;
+      const boardX  = BOARD_MARGIN;
+      const boardY  = BOARD_MARGIN;
 
-    layoutRef.current = {
-      cW, cH,
-      boardX, boardY, boardW, boardH, cellW, cellH,
-      deckX, deckY, deckW, deckH: cellH,
-    };
+      // 덱: 보드 아래, 가로 스크롤 없이 단일 카드 표시
+      const deckCellW = Math.floor((cW - BOARD_MARGIN * 2) / 2); // 덱 카드는 좀 더 크게
+      const deckCellH = deckCellW;
+      const deckW     = deckCellW;
+      const deckX     = BOARD_MARGIN;
+      const deckY     = boardY + boardH + BOARD_MARGIN * 2;
+
+      layoutRef.current = {
+        cW, cH,
+        boardX, boardY, boardW, boardH, cellW, cellH,
+        deckX, deckY, deckW, deckH: deckCellH,
+      };
+    } else {
+      // ── PC 가로: 보드 왼쪽 60%, 덱 오른쪽 38% ──
+      const deckFrac = 0.38;
+      const deckW    = Math.floor(cW * deckFrac) - BOARD_MARGIN;
+      const boardW   = cW - deckW - BOARD_MARGIN * 3;
+      const cellW    = Math.floor(boardW / cols);
+      const cellH    = Math.floor(cellW * (rows / cols < 1 ? 1 : rows / cols));
+      const boardH   = cellH * rows;
+      const boardX   = BOARD_MARGIN;
+      const boardY   = Math.max(BOARD_MARGIN, (cH - boardH) / 2);
+
+      const deckX = boardX + boardW + BOARD_MARGIN * 2;
+      const deckY = Math.max(BOARD_MARGIN, (cH - cellH) / 2);
+
+      layoutRef.current = {
+        cW, cH,
+        boardX, boardY, boardW, boardH, cellW, cellH,
+        deckX, deckY, deckW, deckH: cellH,
+      };
+    }
   }
 
   // ── 조각 초기화 + 셔플 ──
@@ -618,7 +642,8 @@ export default function PuzzleCanvas({
       </div>
 
       {/* Canvas */}
-      <div ref={wrapRef} className="flex-1 relative min-h-0">
+      <div ref={wrapRef} className="relative w-full"
+        style={{ height: "calc(100dvh - 120px)", minHeight: 320 }}>
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full"
