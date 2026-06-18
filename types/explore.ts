@@ -51,6 +51,7 @@ export interface PublicGame {
   order_mode:     "free" | "sequential";
   reward_message: string | null;
   reward_type:    "message" | "coupon" | "certificate";
+  compass_assist: boolean;
   map_url:        string | null;
   time_limit_sec: number | null;
   posts:          PostWithQuiz[];

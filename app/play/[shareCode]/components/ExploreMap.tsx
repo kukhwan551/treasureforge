@@ -16,6 +16,7 @@ interface ExploreMapProps {
   seniorMode: boolean;
   zoom: number;                          // ★ 외부에서 제어하는 줌 레벨
   characterId: CharacterId;              // ★ 선택된 캐릭터
+  compassAssist?: boolean;               // ★ 찾기 도움 모드 (나침반)
   onCursorMove: (x: number, y: number) => void;
   onPostClick:  (post: PostWithQuiz) => void;
 }
@@ -142,7 +143,7 @@ function drawCharacter(
 
 export default function ExploreMap({
   mapUrl, posts, completedIds, nearbyIds,
-  signalLevel, seniorMode, zoom, characterId,
+  signalLevel, seniorMode, zoom, characterId, compassAssist,
   onCursorMove, onPostClick,
 }: ExploreMapProps) {
   const wrapRef  = useRef<HTMLDivElement>(null);
@@ -166,6 +167,7 @@ export default function ExploreMap({
     sm: seniorMode,
     zoom: zoom,
     charId: characterId,
+    compassAssist: compassAssist ?? false,
     posts: posts,
     completed: completedIds,
     nearby: nearbyIds,
@@ -185,6 +187,7 @@ export default function ExploreMap({
   useEffect(() => { stateRef.current.sl = signalLevel; }, [signalLevel]);
   useEffect(() => { stateRef.current.sm = seniorMode; }, [seniorMode]);
   useEffect(() => { stateRef.current.charId = characterId; }, [characterId]);
+  useEffect(() => { stateRef.current.compassAssist = compassAssist ?? false; }, [compassAssist]);
 
   // ★ zoom 변경 시 캐릭터 위치를 유지하며 지도 크기/뷰포트 재계산
   useEffect(() => {
@@ -375,6 +378,52 @@ export default function ExploreMap({
         }
         drawCharacter(ctx, s.charX, s.charY,
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
+
+        // ── 찾기 도움 모드: 나침반 ──
+        if (s.compassAssist && s.mapW > 0) {
+          const isMobLocal = cW < 768;
+          // 캐릭터의 지도 % 좌표
+          const cMapX = ((s.viewX + s.charX) / s.mapW) * 100;
+          const cMapY = ((s.viewY + s.charY) / s.mapH) * 100;
+
+          // 가장 가까운 미발견 포스트 찾기
+          let nearestPost: typeof s.posts[number] | null = null;
+          let nearestDist = Infinity;
+          for (const post of s.posts) {
+            if (s.completed.has(post.id)) continue;
+            if (post.coord_x == null || post.coord_y == null) continue;
+            const dx = Number(post.coord_x) - cMapX;
+            const dy = Number(post.coord_y) - cMapY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < nearestDist) { nearestDist = dist; nearestPost = post; }
+          }
+
+          if (nearestPost) {
+            const tdx = Number(nearestPost.coord_x) - cMapX;
+            const tdy = Number(nearestPost.coord_y) - cMapY;
+            const angle = Math.atan2(tdy, tdx);
+
+            const compassR = (s.sm ? 56 : 44) * 0.62; // 캐릭터 크기에 비례한 거리
+            const cx = s.charX + Math.cos(angle) * compassR;
+            const cy = s.charY + Math.sin(angle) * compassR - (s.sm ? 8 : 6);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle + Math.PI / 2); // 이모지 기본 방향(위쪽) 보정
+            ctx.font = `${isMobLocal ? 18 : 15}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            // 약한 배경 원으로 가독성 확보
+            ctx.rotate(-(angle + Math.PI / 2));
+            ctx.beginPath();
+            ctx.arc(0, 0, isMobLocal ? 12 : 10, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(15,15,16,0.55)";
+            ctx.fill();
+            ctx.rotate(angle + Math.PI / 2);
+            ctx.fillText("🧭", 0, 0);
+            ctx.restore();
+          }
+        }
       }
 
       // ── 거리 임계값 (signalEngine.ts와 동일) ──

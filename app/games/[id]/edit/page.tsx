@@ -23,6 +23,7 @@ interface Game {
   time_limit_sec: number | null;
   reward_message: string | null;
   reward_type: "message" | "coupon" | "certificate";
+  compass_assist: boolean;
 }
 
 interface FormState {
@@ -36,6 +37,7 @@ interface FormState {
   time_limit_sec: number | null;
   reward_message: string;
   reward_type: "message" | "coupon" | "certificate";
+  compass_assist: boolean;
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -96,6 +98,7 @@ export default function EditGamePage() {
     status: "draft", order_mode: "free",
     entry_code: "", time_limit_sec: null,
     reward_message: "", reward_type: "message",
+    compass_assist: false,
   });
   const [errors, setErrors]           = useState<{ title?: string; entry_code?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -121,6 +124,7 @@ export default function EditGamePage() {
         time_limit_sec: g.time_limit_sec ?? null,
         reward_message: g.reward_message ?? "",
         reward_type:    g.reward_type    ?? "message",
+        compass_assist: g.compass_assist ?? false,
       });
     })();
   }, [id]);
@@ -158,6 +162,7 @@ export default function EditGamePage() {
             time_limit_sec: form.time_limit_sec,
             reward_message: form.reward_message.trim() || null,
             reward_type:    form.reward_type,
+            compass_assist: form.compass_assist,
           }),
         });
         const json = await res.json();
@@ -465,6 +470,34 @@ export default function EditGamePage() {
                 className={`${iCls(false)} resize-none`}
               />
             </div>
+          </Section>
+
+          {/* ── 접근성: 찾기 도움 모드 ── */}
+          <Section title="접근성">
+            <p className="text-xs text-[#5a5650]">
+              켜면 탐험가 캐릭터 옆에 나침반이 항상 표시되어, 가장 가까운
+              미발견 포스트의 방향을 안내합니다. 포스트를 직접 보여주지는
+              않으며, 시각적으로 찾기 어려운 참여자를 위한 보조 기능입니다.
+            </p>
+            <button type="button"
+              onClick={() => setForm((f) => ({ ...f, compass_assist: !f.compass_assist }))}
+              className={`flex w-full items-center justify-between rounded-xl border
+                px-4 py-3.5 transition-colors
+                ${form.compass_assist
+                  ? "border-[#b89a5a] bg-[#b89a5a]/10"
+                  : "border-[#2a2924] hover:border-[#3a3830]"
+                }`}>
+              <span className="flex items-center gap-2 text-sm font-medium text-[#c4bfb4]">
+                <span className="text-lg">🧭</span> 찾기 도움 모드 (나침반)
+              </span>
+              <span className={`relative inline-flex h-6 w-11 items-center rounded-full
+                transition-colors
+                ${form.compass_assist ? "bg-[#b89a5a]" : "bg-[#2a2924]"}`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0f0f10]
+                  transition-transform
+                  ${form.compass_assist ? "translate-x-6" : "translate-x-1"}`}/>
+              </span>
+            </button>
           </Section>
 
           {submitError && (

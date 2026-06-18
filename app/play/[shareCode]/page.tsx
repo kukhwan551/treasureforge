@@ -463,6 +463,7 @@ export default function PlayPage() {
             seniorMode={seniorMode}
             zoom={zoom}
             characterId={characterId}
+            compassAssist={game.compass_assist}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}
           />
