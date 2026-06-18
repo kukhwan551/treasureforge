@@ -139,7 +139,7 @@ export default function GameMapPage() {
           </button>
 
           <button
-            onClick={() => router.push(`/games/${id}/posts`)}
+            onClick={() => router.push(`/games/${id}/posts/editor`)}
             disabled={!map}
             className="flex items-center justify-center gap-2 rounded-xl
               bg-[#b89a5a] px-6 py-2.5 text-sm font-medium text-[#0f0f10]
