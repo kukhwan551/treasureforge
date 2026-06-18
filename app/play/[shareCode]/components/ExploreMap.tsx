@@ -3,7 +3,7 @@
 // app/play/[shareCode]/components/ExploreMap.tsx
 // 자동 패닝 방식 (안정화 버전)
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import type { PostWithQuiz, SignalLevel } from "@/types/explore";
 import { getCharacter, type CharacterId } from "@/types/character";
 
@@ -145,7 +145,6 @@ export default function ExploreMap({
   signalLevel, seniorMode, zoom, characterId,
   onCursorMove, onPostClick,
 }: ExploreMapProps) {
-  const [debugMsg, setDebugMsg] = useState<string>("init");
   const wrapRef  = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -242,19 +241,17 @@ export default function ExploreMap({
     s.img = img;
 
     img.onload = () => {
-      setDebugMsg(`onload nat=${img.naturalWidth}x${img.naturalHeight}`);
       const cvs  = canvasRef.current;
       const wrap = wrapRef.current;
-      if (!cvs || !wrap) { setDebugMsg("onload but no cvs/wrap"); return; }
+      if (!cvs || !wrap) return;
 
       // ★ 캔버스 크기를 먼저 확실히 설정
       const cW = wrap.clientWidth;
       const cH = wrap.clientHeight;
-      if (cW === 0 || cH === 0) { setDebugMsg(`zero size cW=${cW} cH=${cH}`); return; }
+      if (cW === 0 || cH === 0) return;
 
       cvs.width  = cW;
       cvs.height = cH;
-      setDebugMsg(`canvas set ${cW}x${cH}`);
 
       s.natW = img.naturalWidth;
       s.natH = img.naturalHeight;
@@ -275,7 +272,6 @@ export default function ExploreMap({
 
     img.onerror = () => {
       console.error("[ExploreMap] image load failed:", mapUrl);
-      setDebugMsg(`onerror url=${mapUrl.slice(0,60)}`);
     };
 
     img.src = mapUrl;
@@ -315,14 +311,9 @@ export default function ExploreMap({
   useEffect(() => {
     let rafId: number;
 
-    let loggedOnce = false;
     function loop(ts: number) {
       rafId = requestAnimationFrame(loop);
       const cvs = canvasRef.current;
-      if (!loggedOnce) {
-        loggedOnce = true;
-        setDebugMsg((m) => m + ` | raf cvs=${!!cvs} loaded=${stateRef.current.imgLoaded}`);
-      }
       if (!cvs) return;
 
       const ctx = cvs.getContext("2d");
@@ -738,36 +729,6 @@ export default function ExploreMap({
                background: "#0a0a0a" }}>
       <canvas ref={canvasRef}
         style={{ position: "absolute", inset: 0, display: "block" }}/>
-      {/* ★ 임시 디버그 오버레이 - 문제 해결 후 제거 */}
-      <div style={{
-        position: "absolute", top: 4, left: 4, right: 4, zIndex: 999,
-        background: "rgba(0,0,0,0.8)", color: "#0f0",
-        fontSize: 10, fontFamily: "monospace", padding: "4px 6px",
-        borderRadius: 4, wordBreak: "break-all", pointerEvents: "none",
-      }}>
-        DEBUG: {debugMsg}
-        <br/>
-        userAgent: {typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 50) : "?"}
-        <br/>
-        url: {mapUrl.slice(0, 70)}
-      </div>
-      {/* ★ 실제 img 태그로 직접 로드 테스트 (브라우저가 그릴 수 있는지 확인) */}
-      <img
-        src={mapUrl}
-        alt="debug-test"
-        style={{
-          position: "absolute", top: 70, left: 4, zIndex: 999,
-          width: 100, height: 60, objectFit: "cover",
-          border: "2px solid lime",
-        }}
-        onLoad={(e) => {
-          const img = e.currentTarget;
-          setDebugMsg((m) => m + ` | <img> onLoad ${img.naturalWidth}x${img.naturalHeight}`);
-        }}
-        onError={() => {
-          setDebugMsg((m) => m + ` | <img> onError!`);
-        }}
-      />
     </div>
   );
 }
