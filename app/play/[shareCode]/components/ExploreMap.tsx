@@ -682,13 +682,13 @@ export default function ExploreMap({
       s.flipped = sx < s.lastScreenX;
     s.lastScreenX = sx;
     s.charX = sx;
-    const touchOffset = s.isMob ? 70 : 0;
+    const touchOffset = s.isMob ? 100 : 0;
     s.charY = sy - touchOffset;
     s.charVisible = true;
     s.moving = true;
 
-    const mapX = Math.max(0, Math.min(100, ((s.viewX + sx) / s.mapW) * 100));
-    const mapY = Math.max(0, Math.min(100, ((s.viewY + sy) / s.mapH) * 100));
+    const mapX = Math.max(0, Math.min(100, ((s.viewX + s.charX) / s.mapW) * 100));
+    const mapY = Math.max(0, Math.min(100, ((s.viewY + s.charY) / s.mapH) * 100));
     onCursorMove(mapX, mapY);
   }
 
@@ -700,8 +700,9 @@ export default function ExploreMap({
     if (!s.imgLoaded || s.mapW === 0) return;
     const sx = clientX - rect.left;
     const sy = clientY - rect.top;
+    const pinOffset = s.isMob ? 100 : 0;
     const mapX = ((s.viewX + sx) / s.mapW) * 100;
-    const mapY = ((s.viewY + sy) / s.mapH) * 100;
+    const mapY = ((s.viewY + sy - pinOffset) / s.mapH) * 100;
     const thr  = wrap.clientWidth < 768 ? 10 : 5;
     for (const post of s.posts) {
       if (!s.nearby.has(post.id) || s.completed.has(post.id)) continue;
