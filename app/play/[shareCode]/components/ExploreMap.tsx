@@ -238,7 +238,6 @@ export default function ExploreMap({
     s.imgLoaded = false;
 
     const img = new Image();
-    img.crossOrigin = "anonymous";
     s.img = img;
 
     img.onload = () => {
