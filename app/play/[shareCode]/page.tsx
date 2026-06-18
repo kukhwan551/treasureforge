@@ -30,7 +30,26 @@ export default function PlayPage() {
   const { shareCode } = useParams<{ shareCode: string }>();
   const router = useRouter();
 
+  // ── 카카오톡 인앱 브라우저 감지 ──
+  // (Canvas 렌더링이 카카오 인앱 웹뷰에서 정상 동작하지 않는 문제 우회)
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const inKakao = /KAKAOTALK/i.test(ua);
+    if (!inKakao) return;
+    setIsKakaoInApp(true);
+
+    // 안드로이드는 카카오 공식 스킴으로 외부 브라우저 자동 전환 가능
+    const isAndroid = /Android/i.test(ua);
+    if (isAndroid) {
+      const targetUrl = window.location.href;
+      window.location.href =
+        "kakaotalk://web/openExternal?url=" + encodeURIComponent(targetUrl);
+    }
+    // iOS는 카카오 정책상 자동 전환이 막혀있어, 안내 화면을 그대로 보여줌
+  }, []);
+
   const [game, setGame]           = useState<PublicGame | null>(null);
+  const [isKakaoInApp, setIsKakaoInApp] = useState(false);
 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [phase, setPhase]         = useState<GamePhase>("loading");
@@ -369,6 +388,36 @@ export default function PlayPage() {
   function handleRestart() { clearExploreState(); setSession(null); setPhase("intro"); }
 
   // ── 렌더 ──
+
+  if (isKakaoInApp) {
+    return (
+      <div className="min-h-screen bg-[#0f0f10] flex items-center justify-center px-6">
+        <div className="max-w-sm text-center">
+          <div className="text-4xl mb-4">🧭</div>
+          <h1 className="text-lg font-semibold text-[#e8e4d9] mb-2">
+            외부 브라우저로 열어주세요
+          </h1>
+          <p className="text-sm text-[#9a9590] leading-relaxed mb-6">
+            카카오톡 안에서는 지도가 정상적으로 표시되지 않을 수 있습니다.
+            <br/>
+            화면 우측 상단의 <span className="text-[#b89a5a] font-medium">⋯ (더보기)</span> 를 눌러
+            <br/>
+            <span className="text-[#b89a5a] font-medium">&quot;다른 브라우저로 열기&quot;</span>를 선택해 주세요.
+          </p>
+          <button
+            onClick={() => {
+              navigator.clipboard?.writeText(window.location.href);
+              alert("링크가 복사되었습니다. 크롬/사파리에 붙여넣어 주세요.");
+            }}
+            className="rounded-xl bg-[#b89a5a] px-5 py-2.5 text-sm font-medium text-[#0f0f10]
+              hover:bg-[#c9aa6a] transition-colors"
+          >
+            링크 복사하기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (phase === "loading") {
     return (
