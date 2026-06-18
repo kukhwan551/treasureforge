@@ -746,7 +746,28 @@ export default function ExploreMap({
         borderRadius: 4, wordBreak: "break-all", pointerEvents: "none",
       }}>
         DEBUG: {debugMsg}
+        <br/>
+        userAgent: {typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 50) : "?"}
+        <br/>
+        url: {mapUrl.slice(0, 70)}
       </div>
+      {/* ★ 실제 img 태그로 직접 로드 테스트 (브라우저가 그릴 수 있는지 확인) */}
+      <img
+        src={mapUrl}
+        alt="debug-test"
+        style={{
+          position: "absolute", top: 70, left: 4, zIndex: 999,
+          width: 100, height: 60, objectFit: "cover",
+          border: "2px solid lime",
+        }}
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          setDebugMsg((m) => m + ` | <img> onLoad ${img.naturalWidth}x${img.naturalHeight}`);
+        }}
+        onError={() => {
+          setDebugMsg((m) => m + ` | <img> onError!`);
+        }}
+      />
     </div>
   );
 }
