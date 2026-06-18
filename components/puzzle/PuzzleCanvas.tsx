@@ -59,6 +59,7 @@ export default function PuzzleCanvas({
   } | null>(null);
 
   const completedRef  = useRef(false);
+  const completingRef = useRef(false); // 완성 하이라이트 중
   const hintRef       = useRef(false);   // 힌트 표시 중 여부
   const hintTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -208,6 +209,20 @@ export default function PuzzleCanvas({
     ctx.roundRect(L.boardX - 4, L.boardY - 4, L.boardW + 8, L.boardH + 8, 8);
     ctx.fill();
     ctx.stroke();
+
+    // 완성 하이라이트: 황금색 글로우 테두리 (pulse)
+    if (completingRef.current) {
+      const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 120); // 빠른 반짝임
+      ctx.save();
+      ctx.shadowColor = "#b89a5a";
+      ctx.shadowBlur  = 24 * pulse;
+      ctx.strokeStyle = `rgba(184,154,90,${0.6 + 0.4 * pulse})`;
+      ctx.lineWidth   = 4;
+      ctx.beginPath();
+      ctx.roundRect(L.boardX - 4, L.boardY - 4, L.boardW + 8, L.boardH + 8, 8);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // 보드 셀 격자
     for (let r = 0; r < rows; r++) {
@@ -455,7 +470,11 @@ export default function PuzzleCanvas({
         // 완료 체크
         if (!completedRef.current && placedRef.current.length === total) {
           completedRef.current = true;
-          setTimeout(onComplete, 300);
+          completingRef.current = true; // 하이라이트 시작
+          setTimeout(() => {
+            completingRef.current = false;
+            onComplete();
+          }, 2300); // 2초 감상 + 300ms
         }
         return;
       }
