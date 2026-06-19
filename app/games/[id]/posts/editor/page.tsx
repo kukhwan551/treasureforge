@@ -87,8 +87,8 @@ export default function PostEditorPage() {
   const handleMapClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!mapInfo || !imgRef.current || !wrapRef.current) return;
 
-    // ★ 패널이 열려있으면 지도 클릭 완전 차단
-    if (showForm) return;
+    // ★ 패널이 열려있으면 지도 클릭 차단 (단, 좌표 지정 모드 제외)
+    if (showForm && !pickingCoord) return;
 
     const wRect   = wrapRef.current.getBoundingClientRect();
     const img     = imgRef.current;
@@ -119,6 +119,17 @@ export default function PostEditorPage() {
       }
     }
 
+    // ★ 좌표 지정 모드: selectedPost 유지하며 좌표만 지정
+    if (pickingCoord) {
+      const coord = { x, y };
+      pendingCoordRef.current = coord;
+      setPendingCoordDisplay(coord);
+      setPickingCoord(false);
+      if (selectedPostRef.current) setSelectedPost(selectedPostRef.current);
+      setShowForm(true);
+      return;
+    }
+
     // ★ 새 포스트: 좌표를 ref에 즉시 고정
     const coord = { x, y };
     pendingCoordRef.current = coord;
@@ -126,7 +137,7 @@ export default function PostEditorPage() {
     setSelectedPost(null);
     setDeleteConfirm(false);
     setShowForm(true);
-  }, [mapInfo, posts, showForm]);
+  }, [mapInfo, posts, showForm, pickingCoord]); // eslint-disable-line
 
   function pinPos(coordX: number, coordY: number) {
     const wrap = wrapRef.current;
