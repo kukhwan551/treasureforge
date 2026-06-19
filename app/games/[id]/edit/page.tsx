@@ -149,7 +149,7 @@ export default function EditGamePage() {
     setIsSavingTemplate(true);
     setTemplateMsg(null);
     try {
-      const postsRes = await fetch(`/api/posts?gameId=${game.id}`);
+      const postsRes = await fetch(`/api/posts?game_id=${game.id}`);
       const postsJson = await postsRes.json();
       const posts = postsJson.data ?? [];
 
