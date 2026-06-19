@@ -36,6 +36,7 @@ export default function PostEditorPage() {
   const [showForm, setShowForm]         = useState(false);
   const [deleting, setDeleting]         = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [pickingCoord, setPickingCoord]   = useState(false);
 
   // ★ 좌표를 ref로 고정 (state보다 먼저 확정)
   const pendingCoordRef = useRef<{ x: number; y: number } | null>(null);
@@ -144,6 +145,8 @@ export default function PostEditorPage() {
   // showForm ref (터치 핸들러에서 최신값 참조)
   const showFormRef = useRef(showForm);
   useEffect(() => { showFormRef.current = showForm; }, [showForm]);
+  const pickingCoordRef = useRef(false);
+  useEffect(() => { pickingCoordRef.current = pickingCoord; }, [pickingCoord]);
   const selectedPostRef = useRef(selectedPost);
   useEffect(() => { selectedPostRef.current = selectedPost; }, [selectedPost]);
 
@@ -168,8 +171,8 @@ export default function PostEditorPage() {
     }
 
     function onTEnd(e: TouchEvent) {
-      const isUnplaced = selectedPostRef.current && (selectedPostRef.current.coord_x === null || selectedPostRef.current.coord_y === null);
-      if (moved || (showFormRef.current && !isUnplaced)) return;
+      if (moved) return;
+      if (showFormRef.current && !pickingCoordRef.current) return;
       const t   = e.changedTouches[0];
       const img = imgRef.current;
       if (!img || img.naturalWidth === 0) return;
@@ -211,11 +214,11 @@ export default function PostEditorPage() {
         }
       }
 
-      // 미배치 포스트 선택 중이면 해당 포스트에 좌표 지정
-      if (isUnplaced && selectedPostRef.current) {
+      // 좌표 지정 모드
+      if (pickingCoordRef.current) {
         pendingCoordRef.current = { x, y };
         setPendingCoordDisplay({ x, y });
-        setDeleteConfirm(false);
+        setPickingCoord(false);
         setShowForm(true);
         return;
       }
@@ -245,7 +248,7 @@ export default function PostEditorPage() {
       if (relX < 0 || relY < 0 || relX > w || relY > h) return;
       const x = Math.round((relX / w) * 1000) / 10;
       const y = Math.round((relY / h) * 1000) / 10;
-      const isUnplacedPC = selectedPostRef.current && (selectedPostRef.current.coord_x === null || selectedPostRef.current.coord_y === null);
+      const isPickingPC = pickingCoordRef.current;
       for (const post of postsRef.current) {
         if (post.coord_x === null || post.coord_y === null) continue;
         const dx = x - Number(post.coord_x), dy = y - Number(post.coord_y);
@@ -253,8 +256,8 @@ export default function PostEditorPage() {
           setSelectedPost(post); pendingCoordRef.current = null; setPendingCoordDisplay(null); setDeleteConfirm(false); setShowForm(true); return;
         }
       }
-      if (isUnplacedPC && selectedPostRef.current) {
-        pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setDeleteConfirm(false); setShowForm(true); return;
+      if (isPickingPC) {
+        pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setPickingCoord(false); setShowForm(true); return;
       }
       if (showFormRef.current) return;
       pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setSelectedPost(null); setDeleteConfirm(false); setShowForm(true);
@@ -468,6 +471,28 @@ export default function PostEditorPage() {
             );
           })()}
 
+          {/* 좌표 지정 모드 오버레이 */}
+          {pickingCoord && (
+            <div className="absolute inset-0 z-30 pointer-events-none"
+              style={{ background: 'rgba(0,0,0,0.3)' }}>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                rounded-xl border border-[#b89a5a] bg-[#0f0f10]/95
+                px-5 py-3 text-center">
+                <p className="text-sm font-medium text-[#b89a5a] mb-1">📍 위치를 탭/클릭하세요</p>
+                <p className="text-xs text-[#5a5650]">원하는 위치를 탭하면 핀이 찍힙니다</p>
+              </div>
+            </div>
+          )}
+          {pickingCoord && (
+            <button
+              onClick={() => { setPickingCoord(false); setShowForm(true); }}
+              className="absolute top-3 right-3 z-40 rounded-xl border border-[#2a2924]
+                bg-[#0f0f10]/90 px-3 py-1.5 text-xs text-[#7a756c]
+                hover:text-[#e07070] transition-colors backdrop-blur-sm">
+              ✕ 취소
+            </button>
+          )}
+
           {/* 패널 열린 상태 안내 */}
           {showForm && !(selectedPost && selectedPost.coord_x === null) && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20
@@ -546,11 +571,24 @@ export default function PostEditorPage() {
                 <h2 className="text-sm font-semibold text-[#e8e4d9]">
                   {selectedPost?.id ? "포스트 수정" : "새 포스트 추가"}
                 </h2>
-                {pendingCoordDisplay && (
-                  <p className="text-[11px] text-[#5a5650] mt-0.5">
-                    위치: ({pendingCoordDisplay.x.toFixed(1)}%, {pendingCoordDisplay.y.toFixed(1)}%)
-                    &nbsp;— 저장 전까지 고정됨
-                  </p>
+                {pendingCoordDisplay ? (
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[11px] text-[#5a5650]">
+                      위치: ({pendingCoordDisplay.x.toFixed(1)}%, {pendingCoordDisplay.y.toFixed(1)}%)
+                    </p>
+                    <button type="button"
+                      onClick={() => { setPickingCoord(true); setShowForm(false); }}
+                      className="text-[10px] text-[#b89a5a] hover:underline">
+                      변경 →
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button"
+                    onClick={() => { setPickingCoord(true); setShowForm(false); }}
+                    className="mt-1 flex items-center gap-1 text-[11px] text-[#b89a5a]
+                      hover:text-[#c9aa6a] transition-colors">
+                    📍 지도에서 위치 지정
+                  </button>
                 )}
                 {selectedPost && (
                   <p className="text-[11px] text-[#5a5650] mt-0.5">
