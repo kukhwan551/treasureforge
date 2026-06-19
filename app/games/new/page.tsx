@@ -4,8 +4,8 @@
 // NewGameForm을 별도 파일로 분리하지 않고 한 파일에 모두 포함합니다.
 // components/games/NewGameForm.tsx 가 없어도 바로 동작합니다.
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // ─────────────────────────────────────────────
 // 타입
@@ -58,7 +58,7 @@ function validate(form: FormState): Partial<Record<keyof FormState, string>> {
 // 페이지
 // ─────────────────────────────────────────────
 
-export default function NewGamePage() {
+function NewGamePageInner() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -72,6 +72,28 @@ export default function NewGamePage() {
   const [errors, setErrors]     = useState<Partial<Record<keyof FormState, string>>>({});
   const [touched, setTouched]   = useState<Partial<Record<keyof FormState, boolean>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [templateTitle, setTemplateTitle] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  // ── 템플릿에서 시작 ──
+  useEffect(() => {
+    if (searchParams.get("from") !== "template") return;
+    const raw = sessionStorage.getItem("template_draft");
+    if (!raw) return;
+    try {
+      const t = JSON.parse(raw);
+      setForm((f) => ({
+        ...f,
+        title:       t.title       ?? f.title,
+        description: t.description ?? f.description,
+        difficulty:  t.difficulty  ?? f.difficulty,
+        target_age:  t.target_age  ?? f.target_age,
+      }));
+      setTemplateTitle(t.title);
+      sessionStorage.removeItem("template_draft");
+    } catch {}
+  }, [searchParams]);
 
   // ── 이벤트 핸들러 ──
   function handleChange(
@@ -158,6 +180,16 @@ export default function NewGamePage() {
         </div>
 
         {/* 폼 */}
+        {templateTitle && (
+          <div className="mb-4 rounded-xl border border-[#b89a5a]/30 bg-[#b89a5a]/10
+            px-4 py-3 flex items-center gap-2">
+            <span className="text-lg">📋</span>
+            <div>
+              <p className="text-sm font-medium text-[#b89a5a]">템플릿 적용됨</p>
+              <p className="text-xs text-[#7a756c]">"{templateTitle}" 기반으로 폼이 채워졌습니다. 나머지를 완성해 주세요.</p>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} noValidate className="space-y-6">
 
           {/* 제목 */}
@@ -370,5 +402,13 @@ function SpinnerIcon() {
       className="animate-spin" aria-hidden="true">
       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
     </svg>
+  );
+}
+
+export default function NewGamePage() {
+  return (
+    <Suspense fallback={null}>
+      <NewGamePageInner />
+    </Suspense>
   );
 }

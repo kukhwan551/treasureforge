@@ -103,6 +103,8 @@ export default function EditGamePage() {
   const [errors, setErrors]           = useState<{ title?: string; entry_code?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPending, startTransition]  = useTransition();
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [templateMsg,      setTemplateMsg]      = useState<string | null>(null);
   const [copied, setCopied]           = useState(false);
 
   useEffect(() => {
@@ -140,6 +142,54 @@ export default function EditGamePage() {
     }
     setErrors(e);
     return Object.keys(e).length === 0;
+  }
+
+  async function handleSaveAsTemplate() {
+    if (!game) return;
+    setIsSavingTemplate(true);
+    setTemplateMsg(null);
+    try {
+      const postsRes = await fetch(`/api/posts?gameId=${game.id}`);
+      const postsJson = await postsRes.json();
+      const posts = postsJson.data ?? [];
+
+      const body = {
+        title:          form.title || game.title,
+        description:    form.description || null,
+        difficulty:     form.difficulty,
+        target_age:     form.target_age,
+        order_mode:     form.order_mode,
+        time_limit_sec: form.time_limit_sec,
+        entry_code:     form.entry_code || null,
+        reward_message: form.reward_message || null,
+        reward_type:    form.reward_type,
+        compass_assist: form.compass_assist,
+        posts: posts.map((p: Record<string, unknown>) => ({
+          name:           p.name,
+          description:    p.description ?? null,
+          order_mode:     p.order_mode ?? "free",
+          mission_type:   p.mission_type ?? "quiz",
+          time_limit_sec: p.time_limit_sec ?? null,
+          score:          p.score ?? 10,
+          hint_1:         p.hint_1 ?? null,
+          hint_2:         p.hint_2 ?? null,
+          hint_3:         p.hint_3 ?? null,
+        })),
+      };
+
+      const res = await fetch("/api/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message);
+      setTemplateMsg(`✅ "${json.data.title}" 템플릿으로 저장됐습니다.`);
+    } catch (err) {
+      setTemplateMsg(`❌ ${err instanceof Error ? err.message : "저장 실패"}`);
+    } finally {
+      setIsSavingTemplate(false);
+    }
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -520,6 +570,28 @@ export default function EditGamePage() {
                 className="flex items-center justify-center gap-2 rounded-xl bg-[#b89a5a] px-6 py-2.5 text-sm font-medium text-[#0f0f10] hover:bg-[#c9aa6a] disabled:opacity-60 transition-colors">
                 {isPending ? <><SpinnerIcon /> 저장 중…</> : "변경 사항 저장"}
               </button>
+            </div>
+
+            {/* 템플릿으로 저장 */}
+            <div className="flex flex-col items-end gap-2 pt-2 border-t border-[#2a2924]">
+              {templateMsg && (
+                <p className={`text-xs ${templateMsg.startsWith("✅") ? "text-[#4a9d6f]" : "text-[#e07070]"}`}>
+                  {templateMsg}
+                </p>
+              )}
+              <button type="button"
+                onClick={handleSaveAsTemplate}
+                disabled={isSavingTemplate}
+                className="flex items-center gap-2 rounded-xl border border-[#2a2924]
+                  px-5 py-2 text-sm font-medium text-[#7a756c]
+                  hover:border-[#b89a5a]/50 hover:text-[#b89a5a]
+                  disabled:opacity-50 transition-colors">
+                {isSavingTemplate ? "저장 중…" : "📋 템플릿으로 저장"}
+              </button>
+              <p className="text-[11px] text-[#3a3830]">
+                게임 구조(포스트 목록·미션 종류)를 템플릿으로 보관합니다.
+                지도·퀴즈 정답은 포함되지 않습니다.
+              </p>
             </div>
           </div>
 
