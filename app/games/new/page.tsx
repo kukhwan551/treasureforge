@@ -73,6 +73,7 @@ function NewGamePageInner() {
   const [touched, setTouched]   = useState<Partial<Record<keyof FormState, boolean>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [templateTitle, setTemplateTitle] = useState<string | null>(null);
+  const [templatePosts,  setTemplatePosts]  = useState<Record<string, unknown>[]>([]);
 
   const searchParams = useSearchParams();
 
@@ -91,6 +92,7 @@ function NewGamePageInner() {
         target_age:  t.target_age  ?? f.target_age,
       }));
       setTemplateTitle(t.title);
+      setTemplatePosts(t.template_posts ?? []);
       sessionStorage.removeItem("template_draft");
     } catch {}
   }, [searchParams]);
@@ -138,7 +140,39 @@ function NewGamePageInner() {
         const json = await res.json();
         if (json.error) throw new Error(json.error.message);
 
-        router.push("/games");
+        const gameId = json.data.id;
+
+        // 템플릿 포스트 일괄 생성
+        if (templatePosts.length > 0) {
+          const sorted = [...templatePosts].sort(
+            (a, b) => ((a.order_index as number) ?? 0) - ((b.order_index as number) ?? 0)
+          );
+          await Promise.all(
+            sorted.map((p, i) =>
+              fetch("/api/posts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  game_id:        gameId,
+                  name:           p.name,
+                  description:    p.description ?? null,
+                  order_index:    i,
+                  order_mode:     p.order_mode    ?? "free",
+                  mission_type:   p.mission_type  ?? "quiz",
+                  time_limit_sec: p.time_limit_sec ?? null,
+                  score:          p.score          ?? 10,
+                  hint_1:         p.hint_1         ?? null,
+                  hint_2:         p.hint_2         ?? null,
+                  hint_3:         p.hint_3         ?? null,
+                }),
+              })
+            )
+          );
+          // 포스트 편집 화면으로 바로 이동
+          router.push(`/games/${gameId}/posts/editor`);
+        } else {
+          router.push("/games");
+        }
       } catch (err) {
         setSubmitError(
           err instanceof Error ? err.message : "게임 생성 중 오류가 발생했습니다."
@@ -186,7 +220,7 @@ function NewGamePageInner() {
             <span className="text-lg">📋</span>
             <div>
               <p className="text-sm font-medium text-[#b89a5a]">템플릿 적용됨</p>
-              <p className="text-xs text-[#7a756c]">"{templateTitle}" 기반으로 폼이 채워졌습니다. 나머지를 완성해 주세요.</p>
+              <p className="text-xs text-[#7a756c]">"{templateTitle}" 기반 · 포스트 {templatePosts.length}개 자동 생성 예정. 나머지를 완성해 주세요.</p>
             </div>
           </div>
         )}
