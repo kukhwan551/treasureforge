@@ -579,7 +579,7 @@ export default function PostEditorPage() {
                       위치: ({pendingCoordDisplay.x.toFixed(1)}%, {pendingCoordDisplay.y.toFixed(1)}%)
                     </p>
                     <button type="button"
-                      onClick={() => { pickingCoordRef.current = true; setPickingCoord(true); setShowForm(false); selectedPostRef.current = selectedPost; }}
+                      onClick={() => { selectedPostRef.current = selectedPost; pickingCoordRef.current = true; setPickingCoord(true); setShowForm(false); }}
                       className="text-[10px] text-[#b89a5a] hover:underline">
                       변경 →
                     </button>
