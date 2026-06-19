@@ -264,6 +264,7 @@ export default function PostEditorPage() {
     wrap.addEventListener("touchmove",  onTMove,  { passive: true });
     wrap.addEventListener("touchend",   onTEnd,   { passive: true });
     return () => {
+      wrap.removeEventListener("click", onMouseClick);
       wrap.removeEventListener("touchstart", onTStart);
       wrap.removeEventListener("touchmove",  onTMove);
       wrap.removeEventListener("touchend",   onTEnd);
@@ -468,7 +469,7 @@ export default function PostEditorPage() {
           })()}
 
           {/* 패널 열린 상태 안내 */}
-          {showForm && (
+          {showForm && !(selectedPost && selectedPost.coord_x === null) && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20
               rounded-xl border border-[#b89a5a]/30 bg-[#0f0f10]/85
               px-4 py-2 text-xs text-[#b89a5a] backdrop-blur-sm whitespace-nowrap">
