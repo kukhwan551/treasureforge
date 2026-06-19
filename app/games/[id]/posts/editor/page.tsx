@@ -199,6 +199,14 @@ export default function PostEditorPage() {
       const x = Math.round((relX / w) * 1000) / 10;
       const y = Math.round((relY / h) * 1000) / 10;
 
+      // 좌표 지정 모드이면 핀 클릭 체크 건너뜀
+      if (pickingCoordRef.current) {
+        pendingCoordRef.current = { x, y };
+        setPendingCoordDisplay({ x, y });
+        setPickingCoord(false);
+        setShowForm(true);
+        return;
+      }
       // 핀 탭 (10% 이내)
       for (const post of postsRef.current) {
         if (post.coord_x === null || post.coord_y === null) continue;
@@ -214,14 +222,6 @@ export default function PostEditorPage() {
         }
       }
 
-      // 좌표 지정 모드
-      if (pickingCoordRef.current) {
-        pendingCoordRef.current = { x, y };
-        setPendingCoordDisplay({ x, y });
-        setPickingCoord(false);
-        setShowForm(true);
-        return;
-      }
       // 새 포스트
       pendingCoordRef.current = { x, y };
       setPendingCoordDisplay({ x, y });
@@ -248,16 +248,16 @@ export default function PostEditorPage() {
       if (relX < 0 || relY < 0 || relX > w || relY > h) return;
       const x = Math.round((relX / w) * 1000) / 10;
       const y = Math.round((relY / h) * 1000) / 10;
-      const isPickingPC = pickingCoordRef.current;
+      if (pickingCoordRef.current) {
+        pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y });
+        setPickingCoord(false); setShowForm(true); return;
+      }
       for (const post of postsRef.current) {
         if (post.coord_x === null || post.coord_y === null) continue;
         const dx = x - Number(post.coord_x), dy = y - Number(post.coord_y);
         if (Math.sqrt(dx*dx+dy*dy) < 7) {
           setSelectedPost(post); pendingCoordRef.current = null; setPendingCoordDisplay(null); setDeleteConfirm(false); setShowForm(true); return;
         }
-      }
-      if (isPickingPC) {
-        pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setPickingCoord(false); setShowForm(true); return;
       }
       if (showFormRef.current) return;
       pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setSelectedPost(null); setDeleteConfirm(false); setShowForm(true);
@@ -474,7 +474,7 @@ export default function PostEditorPage() {
           {/* 좌표 지정 모드 오버레이 */}
           {pickingCoord && (
             <div className="absolute inset-0 z-30 pointer-events-none"
-              style={{ background: 'rgba(0,0,0,0.3)' }}>
+              style={{ background: 'rgba(0,0,0,0.3)', pointerEvents: 'none' }}>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                 rounded-xl border border-[#b89a5a] bg-[#0f0f10]/95
                 px-5 py-3 text-center">
