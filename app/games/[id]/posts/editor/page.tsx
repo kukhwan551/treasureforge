@@ -144,6 +144,8 @@ export default function PostEditorPage() {
   // showForm ref (터치 핸들러에서 최신값 참조)
   const showFormRef = useRef(showForm);
   useEffect(() => { showFormRef.current = showForm; }, [showForm]);
+  const selectedPostRef = useRef(selectedPost);
+  useEffect(() => { selectedPostRef.current = selectedPost; }, [selectedPost]);
 
   // ★ 터치 이벤트 — 마운트 시 한 번만 등록 (showForm은 ref로 참조)
   useEffect(() => {
@@ -166,7 +168,8 @@ export default function PostEditorPage() {
     }
 
     function onTEnd(e: TouchEvent) {
-      if (moved || showFormRef.current) return;
+      const isUnplaced = selectedPostRef.current && (selectedPostRef.current.coord_x === null || selectedPostRef.current.coord_y === null);
+      if (moved || (showFormRef.current && !isUnplaced)) return;
       const t   = e.changedTouches[0];
       const img = imgRef.current;
       if (!img || img.naturalWidth === 0) return;
@@ -208,6 +211,14 @@ export default function PostEditorPage() {
         }
       }
 
+      // 미배치 포스트 선택 중이면 해당 포스트에 좌표 지정
+      if (isUnplaced && selectedPostRef.current) {
+        pendingCoordRef.current = { x, y };
+        setPendingCoordDisplay({ x, y });
+        setDeleteConfirm(false);
+        setShowForm(true);
+        return;
+      }
       // 새 포스트
       pendingCoordRef.current = { x, y };
       setPendingCoordDisplay({ x, y });
@@ -216,6 +227,39 @@ export default function PostEditorPage() {
       setShowForm(true);
     }
 
+    // PC 마우스 클릭
+    function onMouseClick(e: MouseEvent) {
+      const img = imgRef.current;
+      if (!img || img.naturalWidth === 0) return;
+      const wrap2 = wrapRef.current;
+      if (!wrap2) return;
+      const rect = wrap2.getBoundingClientRect();
+      const cW = wrap2.clientWidth, cH = wrap2.clientHeight;
+      const ir = img.naturalWidth / img.naturalHeight;
+      const cr = cW / cH;
+      let w: number, h: number;
+      if (ir > cr) { w = cW; h = cW / ir; } else { h = cH; w = cH * ir; }
+      const left = (cW - w) / 2, top = (cH - h) / 2;
+      const relX = e.clientX - rect.left - left;
+      const relY = e.clientY - rect.top - top;
+      if (relX < 0 || relY < 0 || relX > w || relY > h) return;
+      const x = Math.round((relX / w) * 1000) / 10;
+      const y = Math.round((relY / h) * 1000) / 10;
+      const isUnplacedPC = selectedPostRef.current && (selectedPostRef.current.coord_x === null || selectedPostRef.current.coord_y === null);
+      for (const post of postsRef.current) {
+        if (post.coord_x === null || post.coord_y === null) continue;
+        const dx = x - Number(post.coord_x), dy = y - Number(post.coord_y);
+        if (Math.sqrt(dx*dx+dy*dy) < 7) {
+          setSelectedPost(post); pendingCoordRef.current = null; setPendingCoordDisplay(null); setDeleteConfirm(false); setShowForm(true); return;
+        }
+      }
+      if (isUnplacedPC && selectedPostRef.current) {
+        pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setDeleteConfirm(false); setShowForm(true); return;
+      }
+      if (showFormRef.current) return;
+      pendingCoordRef.current = { x, y }; setPendingCoordDisplay({ x, y }); setSelectedPost(null); setDeleteConfirm(false); setShowForm(true);
+    }
+    wrap.addEventListener("click", onMouseClick);
     wrap.addEventListener("touchstart", onTStart, { passive: true });
     wrap.addEventListener("touchmove",  onTMove,  { passive: true });
     wrap.addEventListener("touchend",   onTEnd,   { passive: true });
