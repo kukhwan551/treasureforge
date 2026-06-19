@@ -333,7 +333,7 @@ export default function PostEditorPage() {
 
   function handleClose() {
     setShowForm(false);
-    setSelectedPost(null);
+    if (!pickingCoordRef.current) setSelectedPost(null);
     pendingCoordRef.current = null;
     setPendingCoordDisplay(null);
     setDeleteConfirm(false);
