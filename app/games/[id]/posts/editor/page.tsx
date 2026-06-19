@@ -454,6 +454,40 @@ export default function PostEditorPage() {
               </div>
             </div>
           )}
+
+          {/* 미배치 포스트 목록 */}
+            {posts.filter(p => p.coord_x === null || p.coord_y === null).length > 0 && (
+              <div className="absolute left-3 z-20
+                rounded-xl border border-[#b89a5a]/30 bg-[#0f0f10]/90
+                px-3 py-2.5 space-y-1.5 backdrop-blur-sm max-w-[180px]"
+                style={{ top: "calc(3rem + 80px)" }}>
+                <p className="text-[10px] font-medium text-[#b89a5a] tracking-wide">
+                  📍 배치 대기 중 ({posts.filter(p => p.coord_x === null || p.coord_y === null).length}개)
+                </p>
+                <p className="text-[9px] text-[#4a4840]">클릭 후 지도에서 위치 지정</p>
+                {posts
+                  .filter(p => p.coord_x === null || p.coord_y === null)
+                  .map(p => (
+                    <button key={p.id}
+                      onClick={() => {
+                        setSelectedPost(p);
+                        setDeleteConfirm(false);
+                        setShowForm(true);
+                        pendingCoordRef.current = null;
+                        setPendingCoordDisplay(null);
+                      }}
+                      className={`w-full text-left rounded-lg border px-2.5 py-1.5
+                        text-[11px] transition-colors
+                        ${selectedPost?.id === p.id
+                          ? "border-[#b89a5a] bg-[#b89a5a]/15 text-[#e8e4d9]"
+                          : "border-[#2a2924] text-[#7a756c] hover:border-[#b89a5a]/40 hover:text-[#c4bfb4]"
+                        }`}>
+                      {p.name}
+                    </button>
+                  ))
+                }
+              </div>
+            )}
         </div>
 
         {/* 사이드 패널 */}
