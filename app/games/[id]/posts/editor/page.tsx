@@ -204,6 +204,8 @@ export default function PostEditorPage() {
         pendingCoordRef.current = { x, y };
         setPendingCoordDisplay({ x, y });
         setPickingCoord(false);
+        pickingCoordRef.current = false;
+        if (selectedPostRef.current) setSelectedPost(selectedPostRef.current);
         setShowForm(true);
         return;
       }
@@ -577,7 +579,7 @@ export default function PostEditorPage() {
                       위치: ({pendingCoordDisplay.x.toFixed(1)}%, {pendingCoordDisplay.y.toFixed(1)}%)
                     </p>
                     <button type="button"
-                      onClick={() => { pickingCoordRef.current = true; setPickingCoord(true); setShowForm(false); }}
+                      onClick={() => { pickingCoordRef.current = true; setPickingCoord(true); setShowForm(false); selectedPostRef.current = selectedPost; }}
                       className="text-[10px] text-[#b89a5a] hover:underline">
                       변경 →
                     </button>
