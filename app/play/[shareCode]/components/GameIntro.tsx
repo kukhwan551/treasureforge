@@ -197,6 +197,15 @@ export default function GameIntro({
           화면을 터치하며 탐험하세요 👆
         </p>
 
+        {/* 다른 게임 둘러보기 */}
+        <div className="mt-3 text-center">
+          <a href="/explore"
+            className="inline-flex items-center gap-1.5 text-[11px] text-[#4a4840]
+              hover:text-[#b89a5a] transition-colors">
+            <span>🗺️</span> 다른 게임 둘러보기
+          </a>
+        </div>
+
       </div>
     </div>
   );

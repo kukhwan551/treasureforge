@@ -24,6 +24,8 @@ interface Game {
   reward_message: string | null;
   reward_type: "message" | "coupon" | "certificate";
   compass_assist: boolean;
+  is_public: boolean;
+  public_agreed_at: string | null;
 }
 
 interface FormState {
@@ -38,6 +40,7 @@ interface FormState {
   reward_message: string;
   reward_type: "message" | "coupon" | "certificate";
   compass_assist: boolean;
+  is_public: boolean;
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -99,6 +102,7 @@ export default function EditGamePage() {
     entry_code: "", time_limit_sec: null,
     reward_message: "", reward_type: "message",
     compass_assist: false,
+    is_public: false,
   });
   const [errors, setErrors]           = useState<{ title?: string; entry_code?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -127,6 +131,7 @@ export default function EditGamePage() {
         reward_message: g.reward_message ?? "",
         reward_type:    g.reward_type    ?? "message",
         compass_assist: g.compass_assist ?? false,
+        is_public: g.is_public ?? false,
       });
     })();
   }, [id]);
@@ -142,6 +147,32 @@ export default function EditGamePage() {
     }
     setErrors(e);
     return Object.keys(e).length === 0;
+  }
+
+  async function handlePublicToggle() {
+    if (!game) return;
+    const newVal = !form.is_public;
+    if (newVal && !window.confirm(
+      "공개 게임 목록(/explore)에 이 게임을 등록하시겠습니까?\n\n" +
+      "• 누구나 게임을 검색하고 플레이할 수 있습니다.\n" +
+      "• 부적절한 콘텐츠는 운영자에 의해 삭제될 수 있습니다.\n\n" +
+      "위 내용에 동의하고 공개하시겠습니까?"
+    )) return;
+    try {
+      const res = await fetch(`/api/games/${game.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          is_public: newVal,
+          public_agreed_at: newVal ? new Date().toISOString() : null,
+        }),
+      });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error.message);
+      setForm((f) => ({ ...f, is_public: newVal }));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "오류 발생");
+    }
   }
 
   async function handleSaveAsTemplate() {
@@ -548,6 +579,42 @@ export default function EditGamePage() {
                   ${form.compass_assist ? "translate-x-6" : "translate-x-1"}`}/>
               </span>
             </button>
+          </Section>
+
+          {/* ── 공개 게임 등록 ── */}
+          <Section title="공개 게임">
+            <p className="text-xs text-[#5a5650]">
+              공개 게임 목록(/explore)에 등록하면 누구나 이 게임을 탐험할 수 있습니다.
+            </p>
+            <button type="button"
+              onClick={handlePublicToggle}
+              className={`flex w-full items-center justify-between rounded-xl border
+                px-4 py-3.5 transition-colors
+                ${form.is_public
+                  ? "border-[#4a9d6f] bg-[#4a9d6f]/10"
+                  : "border-[#2a2924] hover:border-[#3a3830]"
+                }`}>
+              <span className="flex items-center gap-2 text-sm font-medium text-[#c4bfb4]">
+                <span className="text-lg">🌐</span>
+                {form.is_public ? "공개 게임으로 등록됨" : "공개 게임으로 등록"}
+              </span>
+              <span className={`relative inline-flex h-6 w-11 items-center rounded-full
+                transition-colors
+                ${form.is_public ? "bg-[#4a9d6f]" : "bg-[#2a2924]"}`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-[#0f0f10]
+                  transition-transform
+                  ${form.is_public ? "translate-x-6" : "translate-x-1"}`}/>
+              </span>
+            </button>
+            {form.is_public && (
+              <p className="text-[11px] text-[#4a9d6f]">
+                ✓ 현재 공개 중 —{" "}
+                <a href="/explore" target="_blank"
+                  className="underline hover:text-[#6abd8f]">
+                  공개 게임 목록에서 확인
+                </a>
+              </p>
+            )}
           </Section>
 
           {submitError && (
