@@ -198,13 +198,15 @@ export default function GameIntro({
         </p>
 
         {/* 다른 게임 둘러보기 */}
-        <div className="mt-3 text-center">
-          <a href="/explore"
-            className="inline-flex items-center gap-1.5 text-[11px] text-[#4a4840]
-              hover:text-[#b89a5a] transition-colors">
-            <span>🗺️</span> 다른 게임 둘러보기
-          </a>
-        </div>
+        <a href="/explore"
+          className={`mt-3 w-full flex items-center justify-center gap-2
+            rounded-xl border border-[#2a2924]
+            ${seniorMode ? "py-4 text-lg" : "py-3 text-sm"}
+            text-[#7a756c] hover:border-[#b89a5a]/40 hover:text-[#b89a5a]
+            active:scale-[0.98] transition-all`}
+          style={{ minHeight: "44px" }}>
+          <span>🗺️</span> 다른 게임 둘러보기
+        </a>
 
       </div>
     </div>

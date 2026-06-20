@@ -211,6 +211,14 @@ export default function GamesPage() {
               <TemplateIcon /> 내 템플릿
             </button>
             <button
+              onClick={() => router.push("/explore")}
+              className="flex items-center gap-1.5 rounded-xl border border-[#2a2924]
+                bg-[#18181a] px-3.5 py-2.5 text-sm font-medium text-[#7a756c]
+                hover:border-[#3a3830] hover:text-[#9a9590] transition-colors"
+            >
+              <GlobeIcon /> 공개 탐험
+            </button>
+            <button
               onClick={() => router.push("/games/new")}
               className="flex items-center gap-2
                 rounded-xl bg-[#b89a5a] px-5 py-2.5 text-sm font-medium text-[#0f0f10]
@@ -525,6 +533,17 @@ function ChestIcon() {
       <rect x="3" y="9" width="18" height="11" rx="1.5"/>
       <path d="M3 9c0-3 2-5 9-5s9 2 9 5"/>
       <path d="M3 13h18"/>
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
     </svg>
   );
 }
