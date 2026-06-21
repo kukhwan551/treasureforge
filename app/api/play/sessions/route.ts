@@ -152,6 +152,10 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    // 게임 완료 시 보물 카운트 감소
+    if (body.finished_at && data?.game_id) {
+      await supabase.rpc("increment_reward_count", { game_id: data.game_id });
+    }
     return NextResponse.json({ data, error: null });
   } catch (err) {
     const message = err instanceof Error ? err.message : "서버 오류가 발생했습니다.";
