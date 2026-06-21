@@ -634,13 +634,48 @@ export default function ExploreMap({
           const fs = (isMob ? 14 : 12) * stageScale;
           ctx.font = `${fs}px sans-serif`;
           const tw = ctx.measureText(label).width;
-          const lx = px - tw/2 - 7;
-          const ly = drawY - pinR*2 - (isMob ? 28 : 22) * stageScale;
-          const lw = tw + 14; const lh = (isMob ? 23 : 19) * stageScale;
-          ctx.fillStyle = done ? "#4a9d6f" : "rgba(0,0,0,0.85)";
-          ctx.beginPath(); ctx.roundRect(lx, ly, lw, lh, 4); ctx.fill();
-          ctx.fillStyle = "#e8e4d9"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          ctx.fillText(label, px, ly + lh/2);
+          const lx = px - tw/2 - 10;
+          const ly = drawY - pinR*2 - (isMob ? 42 : 34) * stageScale;
+          const lw = tw + 20; const lh = (isMob ? 28 : 24) * stageScale;
+          // ── 말풍선 그리기 ──
+          const br = 7;        // 모서리 반경
+          const ty = 8;        // 꼬리 높이
+          const tx = 8;        // 꼬리 너비 절반
+          const bx = lx, by = ly, bw = lw, bh = lh;
+          const mx = bx + bw / 2; // 말풍선 중앙 x
+
+          ctx.fillStyle = done ? "#3a8d5f" : "rgba(15,15,16,0.92)";
+          ctx.strokeStyle = done ? "#4a9d6f" : "#b89a5a";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          // 상단 좌측 모서리
+          ctx.moveTo(bx + br, by);
+          // 상단 우측 모서리
+          ctx.lineTo(bx + bw - br, by);
+          ctx.arcTo(bx + bw, by, bx + bw, by + br, br);
+          // 우측 하단 모서리
+          ctx.lineTo(bx + bw, by + bh - br);
+          ctx.arcTo(bx + bw, by + bh, bx + bw - br, by + bh, br);
+          // 꼬리 오른쪽
+          ctx.lineTo(mx + tx, by + bh);
+          // 꼬리 끝 (아래 뾰족)
+          ctx.lineTo(mx, by + bh + ty);
+          // 꼬리 왼쪽
+          ctx.lineTo(mx - tx, by + bh);
+          // 하단 좌측 모서리
+          ctx.lineTo(bx + br, by + bh);
+          ctx.arcTo(bx, by + bh, bx, by + bh - br, br);
+          // 좌측 상단 모서리
+          ctx.lineTo(bx, by + br);
+          ctx.arcTo(bx, by, bx + br, by, br);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = done ? "#d4f0e0" : "#e8e4d9";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(label, px, by + bh / 2);
           ctx.restore();
         }
 
