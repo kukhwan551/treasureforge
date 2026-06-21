@@ -404,9 +404,11 @@ export default function ExploreMap({
             const tdy = Number(nearestPost.coord_y) - cMapY;
             const angle = Math.atan2(tdy, tdx);
 
-            const compassR = (s.sm ? 56 : 44) * 0.62; // 캐릭터 크기에 비례한 거리
+            // 캐릭터 중심점 (캐릭터 높이의 절반 위로 보정)
+            const charCenterY = s.charY - (s.sm ? 14 : 11);
+            const compassR = (s.sm ? 56 : 44) * 0.72;
             const cx = s.charX + Math.cos(angle) * compassR;
-            const cy = s.charY + Math.sin(angle) * compassR - (s.sm ? 8 : 6);
+            const cy = charCenterY + Math.sin(angle) * compassR;
 
             ctx.save();
             ctx.translate(cx, cy);
