@@ -10,6 +10,12 @@ function detectContactType(contact: string): "phone" | "email" {
   return contact.includes("@") ? "email" : "phone";
 }
 
+function normalizeContact(contact: string): string {
+  // 이메일은 소문자 변환, 전화번호는 숫자만 추출
+  if (contact.includes("@")) return contact.trim().toLowerCase();
+  return contact.replace(/[^0-9]/g, "");
+}
+
 // ─────────────────────────────────────────────
 // POST /api/play/sessions — 세션 생성
 // ─────────────────────────────────────────────
@@ -41,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     // ── 연락처가 있으면 players 테이블에 upsert ──
     let playerId: string | null = null;
-    const contact = body.contact?.trim();
+    const contact = body.contact?.trim() ? normalizeContact(body.contact.trim()) : undefined;
     if (contact) {
       const contactType = detectContactType(contact);
 

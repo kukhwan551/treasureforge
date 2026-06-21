@@ -5,7 +5,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(req: NextRequest) {
-  const contact = req.nextUrl.searchParams.get("contact")?.trim();
+  const rawContact = req.nextUrl.searchParams.get("contact")?.trim();
+  const contact = rawContact
+    ? rawContact.includes("@")
+      ? rawContact.toLowerCase()
+      : rawContact.replace(/[^0-9]/g, "")
+    : undefined;
 
   if (!contact) {
     return NextResponse.json(
