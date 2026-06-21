@@ -56,7 +56,6 @@ export default function PlayPage() {
   const [entryInput, setEntryInput] = useState("");
   const [entryError, setEntryError] = useState("");
   const [session, setSession]     = useState<PlayerSession | null>(null);
-  const [alreadyClaimed, setAlreadyClaimed] = useState(false);
 
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [nearbyIds, setNearbyIds]       = useState<Set<string>>(new Set());
@@ -191,7 +190,6 @@ export default function PlayPage() {
     const json = await res.json();
     if (json.error) return;
     setSession(json.data);
-    if (json.data?.already_claimed) setAlreadyClaimed(true);
     if (soundEnabled) initAudio();
     setPhase("exploring");
   }
@@ -475,7 +473,6 @@ export default function PlayPage() {
     return (
       <TreasureComplete game={game} session={session}
         seniorMode={seniorMode} soundEnabled={soundEnabled}
-        alreadyClaimed={alreadyClaimed}
         onRestart={handleRestart}
         onExit={() => router.push("/")}/>
     );

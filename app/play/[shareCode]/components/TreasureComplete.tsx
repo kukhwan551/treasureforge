@@ -1,8 +1,6 @@
 "use client";
 
 // app/play/[shareCode]/components/TreasureComplete.tsx
-// 전체 완료 — 보물상자 등장 + 보상 표시
-
 import { useEffect, useState } from "react";
 import type { PublicGame, PlayerSession } from "@/types/explore";
 import { playTreasureSound } from "@/lib/signalEngine";
@@ -12,23 +10,23 @@ interface TreasureCompleteProps {
   session: PlayerSession;
   seniorMode: boolean;
   soundEnabled: boolean;
+  alreadyClaimed?: boolean;
   onRestart: () => void;
   onExit: () => void;
 }
 
 export default function TreasureComplete({
   game, session, seniorMode, soundEnabled,
+  alreadyClaimed = false,
   onRestart, onExit,
 }: TreasureCompleteProps) {
   const [phase, setPhase] = useState<"chest" | "open" | "reward">("chest");
-  const ts  = seniorMode ? "text-xl"  : "text-base";
-  const th  = seniorMode ? "text-3xl" : "text-2xl";
-  const btnH = seniorMode ? "py-5"    : "py-3";
+  const ts   = seniorMode ? "text-xl"  : "text-base";
+  const th   = seniorMode ? "text-3xl" : "text-2xl";
+  const btnH = seniorMode ? "py-5"     : "py-3";
 
   useEffect(() => {
-    // 보물상자 등장 → 열림 → 보상
     if (soundEnabled) playTreasureSound();
-
     const t1 = setTimeout(() => setPhase("open"),   1000);
     const t2 = setTimeout(() => setPhase("reward"),  2200);
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -48,12 +46,10 @@ export default function TreasureComplete({
       {/* 별 배경 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute animate-ping"
+          <div key={i} className="absolute animate-ping"
             style={{
-              left:  `${Math.random() * 100}%`,
-              top:   `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              top:  `${Math.random() * 100}%`,
               width:  Math.random() * 6 + 2,
               height: Math.random() * 6 + 2,
               borderRadius: "50%",
@@ -89,8 +85,19 @@ export default function TreasureComplete({
             {session.nickname} 탐험가, 수고하셨습니다!
           </p>
 
-          {/* 보상 메시지 */}
-          {game.reward_message && (
+          {/* 보상 메시지 또는 중복 안내 */}
+          {alreadyClaimed ? (
+            <div className="rounded-2xl border border-[#5a5650]/30
+              bg-[#1a1a1a] px-6 py-5 text-center">
+              <p className="text-2xl mb-2">📦</p>
+              <p className={`text-[#7a756c] leading-relaxed ${seniorMode ? "text-xl" : "text-base"}`}>
+                이미 보물을 획득하셨습니다.
+              </p>
+              <p className={`text-[#5a5650] mt-1 ${seniorMode ? "text-lg" : "text-sm"}`}>
+                중복 지급되지 않습니다.
+              </p>
+            </div>
+          ) : game.reward_message ? (
             <div className="rounded-2xl border border-[#b89a5a]/30
               bg-[#b89a5a]/10 px-6 py-5">
               <div className="mb-2 flex items-center justify-center gap-1.5">
@@ -109,11 +116,13 @@ export default function TreasureComplete({
                 {game.reward_message}
               </p>
             </div>
-          )}
+          ) : null}
 
-          <p className="text-[13px] text-[#7a756c]">
-            🎒 이 보상은 "내 보물함"에서 언제든 다시 확인할 수 있어요.
-          </p>
+          {!alreadyClaimed && (
+            <p className="text-[13px] text-[#7a756c]">
+              🎒 이 보상은 &quot;내 보물함&quot;에서 언제든 다시 확인할 수 있어요.
+            </p>
+          )}
 
           {/* 점수 / 통계 */}
           <div className="flex items-center justify-center gap-6 flex-wrap">
@@ -130,20 +139,16 @@ export default function TreasureComplete({
 
           {/* 버튼 */}
           <div className="flex flex-col gap-3 pt-2">
-            <button
-              onClick={onRestart}
+            <button onClick={onRestart}
               className={`w-full rounded-xl border border-[#2a2924] font-medium
                 text-[#7a756c] hover:border-[#3a3830] transition-colors
-                ${btnH} ${ts}`}
-            >
+                ${btnH} ${ts}`}>
               다시 탐험하기
             </button>
-            <button
-              onClick={onExit}
+            <button onClick={onExit}
               className={`w-full rounded-xl bg-[#b89a5a] font-bold
                 text-[#0f0f10] hover:bg-[#c9aa6a] transition-colors
-                ${btnH} ${seniorMode ? "text-xl" : "text-base"}`}
-            >
+                ${btnH} ${seniorMode ? "text-xl" : "text-base"}`}>
               탐험 종료
             </button>
           </div>
@@ -154,15 +159,14 @@ export default function TreasureComplete({
   );
 }
 
-function StatItem({
-  label, value, seniorMode,
-}: {
+function StatItem({ label, value, seniorMode }: {
   label: string; value: string; seniorMode: boolean;
 }) {
   return (
     <div className="text-center">
-      <p className={`font-bold text-[#e8e4d9]
-        ${seniorMode ? "text-2xl" : "text-lg"}`}>{value}</p>
+      <p className={`font-bold text-[#e8e4d9] ${seniorMode ? "text-2xl" : "text-lg"}`}>
+        {value}
+      </p>
       <p className={`text-[#5a5650] ${seniorMode ? "text-base" : "text-xs"}`}>
         {label}
       </p>

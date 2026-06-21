@@ -95,21 +95,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 이전 보상 수령 여부 확인
-    let already_claimed = false;
-    if (playerId) {
-      const { data: prevSession } = await supabase
-        .from("player_sessions")
-        .select("id")
-        .eq("game_id", body.game_id)
-        .eq("player_id", playerId)
-        .eq("reward_claimed", true)
-        .neq("id", data.id)
-        .limit(1)
-        .maybeSingle();
-      already_claimed = !!prevSession;
-    }
-    return NextResponse.json({ data: { ...data, already_claimed }, error: null }, { status: 201 });
+    return NextResponse.json({ data, error: null }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "서버 오류가 발생했습니다.";
     return NextResponse.json(
