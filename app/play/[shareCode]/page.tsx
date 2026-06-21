@@ -378,7 +378,7 @@ export default function PlayPage() {
       if (soundEnabled) playTreasureSound();
       const finishedAt = new Date().toISOString();
       setSession((s) => s ? { ...s, finished_at: finishedAt } : null);
-      await fetch("/api/play/sessions", {
+      if (!alreadyClaimed) await fetch("/api/play/sessions", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: session.id, finished_at: finishedAt }),
