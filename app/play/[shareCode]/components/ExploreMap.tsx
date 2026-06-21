@@ -407,7 +407,14 @@ export default function ExploreMap({
 
             // 캐릭터 중심점 (캐릭터 높이의 절반 위로 보정)
             const charCenterY = s.charY - (s.sm ? 14 : 11);
-            const compassR = (s.sm ? 56 : 44) * 0.72;
+            // 포스트까지의 화면 거리 계산
+            const postScreenX = (Number(nearestPost.coord_x) / 100) * s.mapW - s.viewX;
+            const postScreenY = (Number(nearestPost.coord_y) / 100) * s.mapH - s.viewY;
+            const screenDist = Math.sqrt((postScreenX - s.charX)**2 + (postScreenY - charCenterY)**2);
+            // 거리에 비례해서 반경 변화 (가까울수록 작아짐, 멀수록 커짐)
+            const baseR = s.sm ? 40 : 32;
+            const maxR = s.sm ? 72 : 56;
+            const compassR = Math.min(maxR, Math.max(baseR, screenDist * 0.18));
             const cx = s.charX + Math.cos(angle) * compassR;
             const cy = charCenterY + Math.sin(angle) * compassR;
 
