@@ -383,9 +383,10 @@ export default function ExploreMap({
         // ── 찾기 도움 모드: 나침반 ──
         if (s.compassAssist && s.mapW > 0) {
           const isMobLocal = cW < 768;
-          // 캐릭터의 지도 % 좌표
+          // 캐릭터의 지도 % 좌표 (중심점 기준)
+          const charHalfH = s.sm ? 14 : 11;
           const cMapX = ((s.viewX + s.charX) / s.mapW) * 100;
-          const cMapY = ((s.viewY + s.charY) / s.mapH) * 100;
+          const cMapY = ((s.viewY + s.charY - charHalfH) / s.mapH) * 100;
 
           // 가장 가까운 미발견 포스트 찾기
           let nearestPost: typeof s.posts[number] | null = null;
