@@ -12,6 +12,8 @@ interface GameCard {
   time_limit_sec: number | null;
   compass_assist: boolean;
   is_exhausted: boolean;
+  reward_limit: number | null;
+  reward_claimed_count: number;
   maps: { public_url: string }[] | null;
 }
 
@@ -105,6 +107,18 @@ export default function ExplorePage() {
                         🧭 나침반
                       </span>
                     )}
+                    {/* 보물 수량 뱃지 */}
+                    {!g.is_exhausted && (
+                      <div className="absolute bottom-2 right-2">
+                        <span className="rounded-full border border-[#b89a5a]/40
+                          bg-[#0f0f10]/85 px-2 py-0.5 text-[11px] font-medium text-[#b89a5a]">
+                          🎁 {g.reward_limit != null
+                            ? `${Math.max(0, g.reward_limit - (g.reward_claimed_count ?? 0))}개 남음`
+                            : "∞"}
+                        </span>
+                      </div>
+                    )}
+
                     {/* 보물 소진 오버레이 */}
                     {g.is_exhausted && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center
