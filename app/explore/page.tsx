@@ -11,6 +11,7 @@ interface GameCard {
   share_code: string;
   time_limit_sec: number | null;
   compass_assist: boolean;
+  is_exhausted: boolean;
   maps: { public_url: string }[] | null;
 }
 
@@ -82,8 +83,11 @@ export default function ExplorePage() {
                   <div className="relative h-40 bg-[#0a0a0a] overflow-hidden">
                     {thumb ? (
                       <img src={thumb} alt={g.title}
-                        className="w-full h-full object-cover opacity-80
-                          group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"/>
+                        className={`w-full h-full object-cover transition-all duration-300
+                          ${g.is_exhausted
+                            ? "opacity-40 grayscale"
+                            : "opacity-80 group-hover:opacity-100 group-hover:scale-105"
+                          }`}/>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="text-4xl opacity-30">🗺️</span>
@@ -94,12 +98,23 @@ export default function ExplorePage() {
                       text-[10px] font-medium ${DIFF_COLOR[g.difficulty] ?? "text-[#5a5650]"}`}>
                       {DIFF_LABEL[g.difficulty] ?? g.difficulty}
                     </span>
-                    {g.compass_assist && (
+                    {g.compass_assist && !g.is_exhausted && (
                       <span className="absolute top-2 left-2 rounded-full border
                         border-[#b89a5a]/30 bg-[#b89a5a]/10 px-2 py-0.5
                         text-[10px] text-[#b89a5a]">
                         🧭 나침반
                       </span>
+                    )}
+                    {/* 보물 소진 오버레이 */}
+                    {g.is_exhausted && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center
+                        bg-[#0f0f10]/50">
+                        <span className="text-2xl mb-1">📦</span>
+                        <span className="rounded-full border border-[#5a5650]/50
+                          bg-[#0f0f10]/90 px-3 py-1 text-[11px] font-medium text-[#7a756c]">
+                          보물 소진 · 게임 가능
+                        </span>
+                      </div>
                     )}
                   </div>
 
@@ -121,8 +136,9 @@ export default function ExplorePage() {
                       ) : (
                         <span className="text-[11px] text-[#4a4840]">⏱ 무제한</span>
                       )}
-                      <span className="text-[11px] text-[#b89a5a] group-hover:underline">
-                        게임 시작 →
+                      <span className={`text-[11px] group-hover:underline
+                        ${g.is_exhausted ? "text-[#5a5650]" : "text-[#b89a5a]"}`}>
+                        {g.is_exhausted ? "게임만 가능 →" : "게임 시작 →"}
                       </span>
                     </div>
                   </div>

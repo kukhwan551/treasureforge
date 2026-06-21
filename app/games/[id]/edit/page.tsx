@@ -26,6 +26,9 @@ interface Game {
   compass_assist: boolean;
   is_public: boolean;
   public_agreed_at: string | null;
+  reward_expires_at: string | null;
+  reward_limit: number | null;
+  reward_claimed_count: number;
 }
 
 interface FormState {
@@ -41,6 +44,8 @@ interface FormState {
   reward_type: "message" | "coupon" | "certificate";
   compass_assist: boolean;
   is_public: boolean;
+  reward_expires_at: string;
+  reward_limit: string;
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -103,6 +108,8 @@ export default function EditGamePage() {
     reward_message: "", reward_type: "message",
     compass_assist: false,
     is_public: false,
+    reward_expires_at: "",
+    reward_limit: "",
   });
   const [errors, setErrors]           = useState<{ title?: string; entry_code?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -132,6 +139,8 @@ export default function EditGamePage() {
         reward_type:    g.reward_type    ?? "message",
         compass_assist: g.compass_assist ?? false,
         is_public: g.is_public ?? false,
+        reward_expires_at: g.reward_expires_at ? new Date(g.reward_expires_at).toISOString().slice(0,16) : "",
+        reward_limit: g.reward_limit != null ? String(g.reward_limit) : "",
       });
     })();
   }, [id]);
@@ -244,6 +253,8 @@ export default function EditGamePage() {
             reward_message: form.reward_message.trim() || null,
             reward_type:    form.reward_type,
             compass_assist: form.compass_assist,
+            reward_expires_at: form.reward_expires_at || null,
+            reward_limit: form.reward_limit ? parseInt(form.reward_limit) : null,
           }),
         });
         const json = await res.json();
@@ -579,6 +590,52 @@ export default function EditGamePage() {
                   ${form.compass_assist ? "translate-x-6" : "translate-x-1"}`}/>
               </span>
             </button>
+          </Section>
+
+          {/* ── 보물 만료 설정 ── */}
+          <Section title="보물 만료 설정">
+            <p className="text-xs text-[#5a5650]">
+              기간 또는 수량이 초과되면 보물 소진 상태로 표시됩니다. 게임은 계속 플레이 가능합니다.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-[#c4bfb4]">
+                  만료 일시
+                </label>
+                <input type="datetime-local"
+                  value={form.reward_expires_at}
+                  onChange={e => setForm(f => ({ ...f, reward_expires_at: e.target.value }))}
+                  className="w-full rounded-xl border border-[#2a2924] bg-[#141414]
+                    px-3 py-2.5 text-xs text-[#e8e4d9]
+                    focus:outline-none focus:border-[#b89a5a] transition-colors"/>
+                {form.reward_expires_at && (
+                  <button type="button"
+                    onClick={() => setForm(f => ({ ...f, reward_expires_at: "" }))}
+                    className="text-[10px] text-[#5a5650] hover:text-[#e07070]">
+                    ✕ 제거
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-[#c4bfb4]">
+                  최대 수량
+                </label>
+                <input type="number" min="1"
+                  value={form.reward_limit}
+                  onChange={e => setForm(f => ({ ...f, reward_limit: e.target.value }))}
+                  placeholder="무제한"
+                  className="w-full rounded-xl border border-[#2a2924] bg-[#141414]
+                    px-3 py-2.5 text-xs text-[#e8e4d9] placeholder:text-[#3a3830]
+                    focus:outline-none focus:border-[#b89a5a] transition-colors"/>
+                {form.reward_limit && (
+                  <button type="button"
+                    onClick={() => setForm(f => ({ ...f, reward_limit: "" }))}
+                    className="text-[10px] text-[#5a5650] hover:text-[#e07070]">
+                    ✕ 제거
+                  </button>
+                )}
+              </div>
+            </div>
           </Section>
 
           {/* ── 공개 게임 등록 ── */}

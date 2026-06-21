@@ -14,7 +14,8 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     .from("games")
     .select(`
       id, title, description, status, share_code,
-      order_mode, reward_message, reward_type, time_limit_sec, compass_assist
+      order_mode, reward_message, reward_type, time_limit_sec, compass_assist,
+      reward_expires_at, reward_limit, reward_claimed_count
     `)
     .eq("share_code", shareCode)
     .in("status", ["published", "private"])
@@ -67,9 +68,15 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     );
   }
 
+  const now = new Date();
+  const is_exhausted =
+    (game.reward_expires_at != null && new Date(game.reward_expires_at) < now) ||
+    (game.reward_limit != null && (game.reward_claimed_count ?? 0) >= game.reward_limit);
+
   return NextResponse.json({
     data: {
       ...game,
+      is_exhausted,
       map_url: mapData?.public_url ?? null,
       posts:   posts ?? [],
     },

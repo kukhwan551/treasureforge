@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
       id, title, description, difficulty, target_age,
       order_mode, time_limit_sec, share_code,
       compass_assist, created_at,
+      reward_expires_at, reward_limit, reward_claimed_count,
       maps ( public_url )
     `, { count: "exact" })
     .eq("is_public", true)
@@ -30,5 +31,13 @@ export async function GET(req: NextRequest) {
     { data: null, error: { message: error.message } }, { status: 500 }
   );
 
-  return NextResponse.json({ data, count, error: null });
+  const now = new Date();
+  const enriched = (data ?? []).map((g: Record<string, unknown>) => ({
+    ...g,
+    is_exhausted:
+      (g.reward_expires_at != null && new Date(g.reward_expires_at as string) < now) ||
+      (g.reward_limit != null && (g.reward_claimed_count as number ?? 0) >= (g.reward_limit as number)),
+  }));
+
+  return NextResponse.json({ data: enriched, count, error: null });
 }
