@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
 
     // 게임 보물 카운트 +1
     if (game) {
-      await supabase.rpc("increment_reward_count", { game_id: session.game_id });
+      const { error: rpcErr } = await supabase.rpc("increment_reward_count", { game_id: session.game_id });
+      if (rpcErr) console.error("[claim] rpc error:", rpcErr);
     }
 
     return NextResponse.json({ data, error: null });
