@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
         .select("id")
         .eq("game_id", body.game_id)
         .eq("player_id", playerId)
-        .eq("reward_claimed", true)
+        .not("finished_at", "is", null)
         .neq("id", data.id)
         .limit(1)
         .maybeSingle();
