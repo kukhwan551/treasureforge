@@ -518,6 +518,8 @@ export default function PlayPage() {
       )}
 
       <div className="fixed left-0 right-0" style={{ top: session ? HUD_HEIGHT : 0, bottom: 0, zIndex: 10 }}>
+        {/* DEBUG: phase={phase} */}
+        <div style={{position:"fixed",top:0,right:0,zIndex:9999,background:"blue",color:"white",fontSize:"12px",padding:"4px"}}>{phase}</div>
         {game.map_url && phase !== "puzzle" && (
           <ExploreMap
             mapUrl={game.map_url}
