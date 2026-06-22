@@ -54,6 +54,9 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       post_puzzles (
         id, image_url, cols, rows,
         time_limit_sec, hint_enabled
+      ),
+      post_photo_missions (
+        id, keywords, guide_text
       )
     `)
     .eq("game_id", game.id)

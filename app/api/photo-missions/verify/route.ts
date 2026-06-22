@@ -5,8 +5,11 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { imageBase64, mediaType, keywords, postId } = body;
 
-  if (!imageBase64 || !keywords) {
-    return NextResponse.json({ error: { message: "이미지와 키워드가 필요합니다." } }, { status: 400 });
+  if (!imageBase64) {
+    return NextResponse.json({ error: { message: "이미지가 필요합니다." } }, { status: 400 });
+  }
+  if (!keywords || !keywords.trim()) {
+    return NextResponse.json({ data: { found: false, matched_keyword: null, description: "키워드가 설정되지 않았습니다. 게임 제작자에게 문의해주세요." }, error: null });
   }
 
   const keywordList = keywords.split(",").map((k: string) => k.trim()).filter(Boolean);
