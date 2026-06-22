@@ -259,6 +259,7 @@ export default function PlayPage() {
         return;
       }
       pauseBubbleRef.current = true;
+      console.log("[DEBUG] puzzle phase, pauseBubbleRef:", pauseBubbleRef.current);
       setPhase("puzzle");
       return;
     }
@@ -556,14 +557,14 @@ export default function PlayPage() {
         const puzzle = activePost.post_puzzles?.[0];
         if (!puzzle) return null;
         return (
+          <><div style={{position:"fixed",top:10,left:10,zIndex:9999,background:"red",color:"white",padding:"8px",fontSize:"16px"}}>pauseBubble: {String(pauseBubbleRef.current)}</div>
           <PuzzlePopup
             postName={activePost.name}
             puzzle={puzzle}
             seniorMode={seniorMode}
             onComplete={handlePuzzleComplete}
             onSkip={handlePuzzleSkip}
-          />
-        );
+          /></>);
       })()}
 
       <ResultOverlay result={resultOverlay} postName="" seniorMode={seniorMode}
