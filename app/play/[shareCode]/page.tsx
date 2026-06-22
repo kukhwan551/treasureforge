@@ -95,9 +95,11 @@ export default function PlayPage() {
 
   useEffect(() => { gameRef.current         = game;         }, [game]);
   useEffect(() => { completedIdsRef.current = completedIds; }, [completedIds]);
-  // phaseRef 즉시 동기화 (useEffect 지연 방지)
-  phaseRef.current = phase;
-  pauseBubbleRef.current = phase !== "exploring";
+  // phaseRef 동기화
+  useEffect(() => {
+    phaseRef.current = phase;
+    pauseBubbleRef.current = phase !== "exploring";
+  }, [phase]);
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
   useEffect(() => {
