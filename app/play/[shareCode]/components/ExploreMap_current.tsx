@@ -441,12 +441,13 @@ export default function ExploreMap({
             ctx.arc(b.x-b.r*0.3, b.y-b.r*0.35, b.r*0.2, 0, Math.PI*2);
             ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
             ctx.restore();
-            if (!obstacleHitRef.current && !s.pauseBubble) {
+            if (!obstacleHitRef.current) {
               const charR = s.sm ? 18 : 14;
               const dx = s.charX - b.x;
               const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
               if (Math.sqrt(dx*dx + dy*dy) < b.r + charR) {
                 obstacleHitRef.current = true;
+                if (s.pauseBubble) { setTimeout(() => { obstacleHitRef.current = false; }, 300); return; }
                 // 팝 사운드
                 try {
                   const ac = new AudioContext();
