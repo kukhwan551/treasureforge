@@ -421,6 +421,10 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 비누방울 장애물 ──
+        // 퍼즐/퀴즈 중 비누방울 화면 밖으로
+        if (obstacleType !== "none" && s.pauseBubble) {
+          for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
+        }
         if (obstacleType !== "none" && !s.pauseBubble && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy;
