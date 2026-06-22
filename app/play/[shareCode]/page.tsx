@@ -94,7 +94,8 @@ export default function PlayPage() {
 
   useEffect(() => { gameRef.current         = game;         }, [game]);
   useEffect(() => { completedIdsRef.current = completedIds; }, [completedIds]);
-  useEffect(() => { phaseRef.current        = phase;        }, [phase]);
+  // phaseRef 즉시 동기화 (useEffect 지연 방지)
+  phaseRef.current = phase;
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
   useEffect(() => {
