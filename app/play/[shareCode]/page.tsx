@@ -258,6 +258,7 @@ export default function PlayPage() {
         handlePostComplete(post, 0);
         return;
       }
+      pauseBubbleRef.current = true;
       setPhase("puzzle");
       return;
     }
@@ -323,6 +324,7 @@ export default function PlayPage() {
 
   // 퍼즐 완료
   function handlePuzzleComplete() {
+    pauseBubbleRef.current = false;
     if (!activePost) return;
     const post = activePost;
     if (soundEnabled) playCorrectSound();
@@ -348,6 +350,7 @@ export default function PlayPage() {
   }
 
   function handlePuzzleSkip() {
+    pauseBubbleRef.current = false;
     setActivePost(null);
     setPhase("exploring");
   }
