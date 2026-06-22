@@ -447,6 +447,7 @@ export default function ExploreMap({
               const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
               if (Math.sqrt(dx*dx + dy*dy) < b.r + charR) {
                 obstacleHitRef.current = true;
+                if (s.pauseBubble) { setTimeout(() => { obstacleHitRef.current = false; }, 300); return; }
                 // 팝 사운드
                 try {
                   const ac = new AudioContext();
