@@ -422,6 +422,21 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                     px-3 py-2.5 text-xs text-[#e8e4d9] placeholder:text-[#3a3830]
                     focus:outline-none focus:border-[#b89a5a] transition-colors"/>
               </div>
+              <button type="button" disabled={saving}
+                onClick={async () => {
+                  if (!currentPost?.id) return;
+                  setSaving(true);
+                  try {
+                    await fetch("/api/photo-missions", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ post_id: currentPost.id, keywords: photoKeywords, guide_text: photoGuideText }),
+                    });
+                  } finally { setSaving(false); }
+                }}
+                className="w-full rounded-xl bg-[#b89a5a] px-4 py-2.5 text-sm font-medium text-[#0f0f10] hover:bg-[#c9aa6a] disabled:opacity-60 transition-colors mt-2">
+                {saving ? "저장 중..." : "💾 인증샷 설정 저장"}
+              </button>
             </div>
           )}
         </div>
