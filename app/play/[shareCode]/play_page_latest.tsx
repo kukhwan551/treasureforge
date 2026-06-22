@@ -10,8 +10,7 @@ import ExploreMap, { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP, ZOOM_DEFAULT } from "./compo
 import { CHARACTERS, type CharacterId } from "@/types/character";
 import HUD, { HUD_HEIGHT } from "./components/HUD";
 import MissionPopup     from "./components/MissionPopup";
-import PuzzlePopup       from "@/components/puzzle/PuzzlePopup";
-import PhotoMissionPopup from "@/components/photo/PhotoMissionPopup";
+import PuzzlePopup      from "@/components/puzzle/PuzzlePopup";
 import TreasureComplete from "./components/TreasureComplete";
 import ConfettiCanvas   from "./components/ConfettiCanvas";
 import KeyFlyAnimation  from "./components/KeyFlyAnimation";
@@ -254,16 +253,16 @@ export default function PlayPage() {
     const missionType = post.mission_type ?? "quiz";
 
     if (missionType === "puzzle") {
+      // 퍼즐 미션
       const puzzle = post.post_puzzles?.[0];
-      if (!puzzle) { handlePostComplete(post, 0); return; }
+      if (!puzzle) {
+        // 퍼즐 설정 없으면 바로 통과
+        handlePostComplete(post, 0);
+        return;
+      }
       pauseBubbleRef.current = true;
+      console.log("[DEBUG] puzzle phase, pauseBubbleRef:", pauseBubbleRef.current);
       setPhase("puzzle");
-      return;
-    }
-
-    if (missionType === "photo") {
-      pauseBubbleRef.current = true;
-      setPhase("photo");
       return;
     }
 
@@ -552,16 +551,6 @@ export default function PlayPage() {
           onAnswer={handleAnswer}
           onUseHint={() => setQuizState((q) => q ? { ...q, hintsUsed: (q.hintsUsed ?? 0) + 1 } : null)}
           onClose={handleSkip} onSkip={handleSkip}
-        />
-      )}
-
-      {/* ★ 인증샷 팝업 */}
-      {phase === "photo" && activePost && (
-        <PhotoMissionPopup
-          post={activePost}
-          seniorMode={seniorMode}
-          onComplete={() => { pauseBubbleRef.current = false; handlePostComplete(activePost, 0); }}
-          onSkip={() => { pauseBubbleRef.current = false; setActivePost(null); setPhase("exploring"); }}
         />
       )}
 

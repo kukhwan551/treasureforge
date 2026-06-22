@@ -28,7 +28,7 @@ export interface Post {
   hint_3: string | null;
   score: number;
   is_active: boolean;
-  mission_type?: "quiz" | "puzzle";
+  mission_type?: "quiz" | "puzzle" | "photo";
   created_at: string;
   updated_at: string;
   quizzes?: Quiz[];

@@ -31,7 +31,7 @@ interface PostFormProps {
   onCancel: () => void;
 }
 
-type MissionType = "quiz" | "puzzle" | "photo";
+type MissionType = "quiz" | "puzzle";
 
 export default function PostForm({ gameId, game, initial, onSaved, onCancel }: PostFormProps) {
   const supabase = createClient();
@@ -42,14 +42,6 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
   const [score,        setScore]        = useState(initial?.score ?? 10);
   const [missionType,  setMissionType]  = useState<MissionType>(
     (initial?.mission_type as MissionType) ?? "quiz"
-  );
-  const [photoKeywords,  setPhotoKeywords]  = useState(
-    (initial as unknown as { post_photo_missions?: {keywords:string;guide_text:string}[] })
-      ?.post_photo_missions?.[0]?.keywords ?? ""
-  );
-  const [photoGuideText, setPhotoGuideText] = useState(
-    (initial as unknown as { post_photo_missions?: {keywords:string;guide_text:string}[] })
-      ?.post_photo_missions?.[0]?.guide_text ?? ""
   );
 
   const [errors,  setErrors]  = useState<Record<string, string>>({});
@@ -114,14 +106,6 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
         const j = await r.json();
         if (j.error) throw new Error(j.error.message);
         saved = j.data as Post;
-      }
-      // photo 미션 저장
-      if (missionType === "photo" && saved.id) {
-        await fetch("/api/photo-missions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ post_id: saved.id, keywords: photoKeywords, guide_text: photoGuideText }),
-        });
       }
       const fullSaved = { ...saved, quizzes };
       setSavedPost(fullSaved);
@@ -217,7 +201,6 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
               {([
                 { value: "quiz"   as MissionType, label: "📝 퀴즈",    desc: "문제를 풀어서 통과" },
                 { value: "puzzle" as MissionType, label: "🧩 그림 퍼즐", desc: "퍼즐을 맞춰서 통과" },
-                { value: "photo"  as MissionType, label: "📸 인증샷",    desc: "사진으로 장소 인증" },
               ] as const).map((opt) => {
                 const sel = missionType === opt.value;
                 return (
@@ -395,34 +378,6 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                 onSaved={(p) => setPuzzle(p)}
               />
             </>
-          )}
-          {currentPost?.id && missionType === "photo" && (
-            <div className="mt-4 space-y-3">
-              <h3 className="text-sm font-semibold text-[#e8e4d9] mb-4">
-                📸 인증샷 미션 설정
-              </h3>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-[#c4bfb4]">
-                  확인 키워드
-                  <span className="ml-1 text-[#5a5650]">(쉼표 구분, 하나라도 이미지에 있으면 통과)</span>
-                </label>
-                <input type="text" value={photoKeywords}
-                  onChange={e => setPhotoKeywords(e.target.value)}
-                  placeholder="예: 스타벅스, STARBUCKS, 별다방"
-                  className="w-full rounded-xl border border-[#2a2924] bg-[#0f0f10]
-                    px-3 py-2.5 text-xs text-[#e8e4d9] placeholder:text-[#3a3830]
-                    focus:outline-none focus:border-[#b89a5a] transition-colors"/>
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-[#c4bfb4]">참여자 안내 문구</label>
-                <input type="text" value={photoGuideText}
-                  onChange={e => setPhotoGuideText(e.target.value)}
-                  placeholder="예: 매장 입구 간판이 보이게 찍어주세요"
-                  className="w-full rounded-xl border border-[#2a2924] bg-[#0f0f10]
-                    px-3 py-2.5 text-xs text-[#e8e4d9] placeholder:text-[#3a3830]
-                    focus:outline-none focus:border-[#b89a5a] transition-colors"/>
-              </div>
-            </div>
           )}
         </div>
       )}

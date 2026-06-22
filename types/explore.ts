@@ -5,7 +5,7 @@ import type { PostPuzzle } from "./puzzle";
 
 export type GamePhase =
   | "loading" | "entry_code" | "intro"
-  | "exploring" | "mission" | "puzzle" | "complete";
+  | "exploring" | "mission" | "puzzle" | "photo" | "complete";
 
 export type SignalLevel = 0 | 1 | 2 | 3 | 4;
 
@@ -16,6 +16,7 @@ export const SIGNAL_LABEL: Record<SignalLevel, string> = {
 
 export interface PostWithQuiz extends Post {
   quizzes:      Quiz[];
+  post_photo_missions?: { keywords: string; guide_text: string }[];
   post_puzzles: PostPuzzle[];   // ← 추가
 }
 
