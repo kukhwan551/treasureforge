@@ -524,6 +524,7 @@ export default function PlayPage() {
             compassAssist={game.compass_assist}
             obstacleType={game.obstacle_type ?? "none"}
             obstacleLevel={game.obstacle_level ?? "easy"}
+            pauseObstacle={phase !== "exploring"}
             onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}

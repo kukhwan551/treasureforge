@@ -19,6 +19,7 @@ interface ExploreMapProps {
   compassAssist?: boolean;
   obstacleType?: string;
   obstacleLevel?: string;
+  pauseObstacle?: boolean;
   onObstacleHit?: () => void;
   onCursorMove: (x: number, y: number) => void;
   onPostClick:  (post: PostWithQuiz) => void;
@@ -149,6 +150,7 @@ export default function ExploreMap({
   signalLevel, seniorMode, zoom, characterId, compassAssist,
   obstacleType = "none",
   obstacleLevel = "easy",
+  pauseObstacle = false,
   onObstacleHit,
   onCursorMove, onPostClick,
 }: ExploreMapProps) {
@@ -410,7 +412,7 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 비누방울 장애물 ──
-        if (obstacleType !== "none" && bubblesRef.current.length > 0) {
+        if (obstacleType !== "none" && !pauseObstacle && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy;
             if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
