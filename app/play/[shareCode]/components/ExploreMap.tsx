@@ -162,7 +162,7 @@ export default function ExploreMap({
   // 모든 상태를 하나의 ref 객체로 관리
   const pauseObstacleRef = useRef(pauseObstacle);
   pauseObstacleRef.current = pauseObstacle; // 렌더마다 즉시 동기화
-  useEffect(() => { console.log("[ExploreMap] MOUNTED"); return () => console.log("[ExploreMap] UNMOUNTED"); }, []);
+  
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
   const obstacleHitRef = useRef(false);
