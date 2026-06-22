@@ -431,11 +431,25 @@ export default function ExploreMap({
             ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
             ctx.restore();
             if (!obstacleHitRef.current) {
+              const charR = s.sm ? 18 : 14;
               const dx = s.charX - b.x;
-              const dy = (s.charY - (s.sm ? 14 : 11)) - b.y;
-              if (Math.sqrt(dx*dx + dy*dy) < b.r + (s.sm ? 11 : 9)) {
+              const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
+              if (Math.sqrt(dx*dx + dy*dy) < b.r + charR) {
                 obstacleHitRef.current = true;
-                setTimeout(() => { obstacleHitRef.current = false; onObstacleHit?.(); }, 300);
+                // 팝 사운드
+                try {
+                  const ac = new AudioContext();
+                  const osc = ac.createOscillator();
+                  const gain = ac.createGain();
+                  osc.connect(gain); gain.connect(ac.destination);
+                  osc.type = "sine";
+                  osc.frequency.setValueAtTime(800, ac.currentTime);
+                  osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.15);
+                  gain.gain.setValueAtTime(0.4, ac.currentTime);
+                  gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
+                  osc.start(); osc.stop(ac.currentTime + 0.2);
+                } catch(e) {}
+                setTimeout(() => { obstacleHitRef.current = false; onObstacleHit?.(); }, 100);
               }
             }
           }
