@@ -158,8 +158,10 @@ export default function ExploreMap({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // 모든 상태를 하나의 ref 객체로 관리
+  const pauseObstacleRef = useRef(false);
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
   const obstacleHitRef = useRef(false);
+  useEffect(() => { pauseObstacleRef.current = pauseObstacle; }, [pauseObstacle]);
 
   const stateRef = useRef({
     img:       null as HTMLImageElement | null,
@@ -412,7 +414,7 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 비누방울 장애물 ──
-        if (obstacleType !== "none" && !pauseObstacle && bubblesRef.current.length > 0) {
+        if (obstacleType !== "none" && !pauseObstacleRef.current && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy;
             if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
