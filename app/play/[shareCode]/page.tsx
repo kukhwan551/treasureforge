@@ -554,6 +554,7 @@ export default function PlayPage() {
         />
       )}
 
+      <div style={{position:"fixed",top:0,right:0,zIndex:9999,background:"red",color:"white",fontSize:"14px",padding:"4px"}}>phase:{phase}</div>
       {/* ★ 퍼즐 팝업 */}
       {phase === "puzzle" && activePost && (() => {
         const puzzle = activePost.post_puzzles?.[0];
