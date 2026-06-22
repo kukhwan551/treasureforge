@@ -87,6 +87,7 @@ export default function PlayPage() {
   const gameRef         = useRef<PublicGame | null>(null);
   const completedIdsRef = useRef<Set<string>>(new Set());
   const phaseRef        = useRef<GamePhase>("loading");
+  const pauseBubbleRef  = useRef(false);
   const soundEnabledRef = useRef(true);
   const lastSignalRef   = useRef<SignalLevel>(0);
   const beepTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -96,6 +97,7 @@ export default function PlayPage() {
   useEffect(() => { completedIdsRef.current = completedIds; }, [completedIds]);
   // phaseRef 즉시 동기화 (useEffect 지연 방지)
   phaseRef.current = phase;
+  pauseBubbleRef.current = phase !== "exploring";
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
   useEffect(() => {
@@ -526,6 +528,7 @@ export default function PlayPage() {
             obstacleType={game.obstacle_type ?? "none"}
             obstacleLevel={game.obstacle_level ?? "easy"}
             pauseObstacle={phase !== "exploring"}
+            pauseBubbleRef={pauseBubbleRef}
             onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}

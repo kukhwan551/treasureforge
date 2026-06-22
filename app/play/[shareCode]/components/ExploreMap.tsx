@@ -20,6 +20,7 @@ interface ExploreMapProps {
   obstacleType?: string;
   obstacleLevel?: string;
   pauseObstacle?: boolean;
+  pauseBubbleRef?: React.MutableRefObject<boolean>;
   onObstacleHit?: () => void;
   onCursorMove: (x: number, y: number) => void;
   onPostClick:  (post: PostWithQuiz) => void;
@@ -151,6 +152,7 @@ export default function ExploreMap({
   obstacleType = "none",
   obstacleLevel = "easy",
   pauseObstacle = false,
+  pauseBubbleRef,
   onObstacleHit,
   onCursorMove, onPostClick,
 }: ExploreMapProps) {
@@ -416,7 +418,7 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 비누방울 장애물 ──
-        if (obstacleType !== "none" && !s.pauseBubble && bubblesRef.current.length > 0) {
+        if (obstacleType !== "none" && !(pauseBubbleRef ? pauseBubbleRef.current : s.pauseBubble) && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy;
             if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
