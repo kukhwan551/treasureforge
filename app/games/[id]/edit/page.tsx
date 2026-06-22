@@ -602,6 +602,32 @@ export default function EditGamePage() {
             </button>
           </Section>
 
+          {/* ── 장애물 설정 ── */}
+          <Section title="장애물 설정">
+            <p className="text-xs text-[#5a5650]">장애물에 닿으면 완료한 포스트가 초기화됩니다.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-[#c4bfb4]">장애물 종류</label>
+                <select value={form.obstacle_type} onChange={e => setForm(f => ({ ...f, obstacle_type: e.target.value }))}
+                  className="w-full rounded-xl border border-[#2a2924] bg-[#141414] px-3 py-2.5 text-xs text-[#e8e4d9] focus:outline-none focus:border-[#b89a5a] transition-colors">
+                  <option value="none">없음</option>
+                  <option value="bubble">🫧 비누방울</option>
+                </select>
+              </div>
+              {form.obstacle_type !== "none" && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-[#c4bfb4]">난이도</label>
+                  <select value={form.obstacle_level} onChange={e => setForm(f => ({ ...f, obstacle_level: e.target.value }))}
+                    className="w-full rounded-xl border border-[#2a2924] bg-[#141414] px-3 py-2.5 text-xs text-[#e8e4d9] focus:outline-none focus:border-[#b89a5a] transition-colors">
+                    <option value="easy">하 (3개, 느림)</option>
+                    <option value="medium">중 (6개, 보통)</option>
+                    <option value="hard">상 (10개, 빠름)</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </Section>
+
           {/* ── 보물 만료 설정 ── */}
           <Section title="보물 만료 설정">
             <p className="text-xs text-[#5a5650]">
