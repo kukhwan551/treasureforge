@@ -161,7 +161,6 @@ export default function ExploreMap({
 
   // 모든 상태를 하나의 ref 객체로 관리
   const pauseObstacleRef = useRef(false);
-  pauseObstacleRef.current = pauseObstacle;
   useEffect(() => { console.log("[ExploreMap] MOUNTED"); return () => console.log("[ExploreMap] UNMOUNTED"); }, []);
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
@@ -424,10 +423,10 @@ export default function ExploreMap({
 
         // ── 비누방울 장애물 ──
         // 퍼즐/퀴즈 중 비누방울 화면 밖으로
-        if (obstacleType !== "none" && pauseObstacleRef.current) {
+        if (obstacleType !== "none" && s.pauseBubble) {
           for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
         }
-        if (obstacleType !== "none" && !pauseObstacleRef.current && bubblesRef.current.length > 0) {
+        if (obstacleType !== "none" && !s.pauseBubble && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy;
             if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
@@ -447,7 +446,7 @@ export default function ExploreMap({
             ctx.arc(b.x-b.r*0.3, b.y-b.r*0.35, b.r*0.2, 0, Math.PI*2);
             ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
             ctx.restore();
-            if (!obstacleHitRef.current && !pauseObstacleRef.current) {
+            if (!obstacleHitRef.current && !s.pauseBubble) {
               const charR = s.sm ? 18 : 14;
               const dx = s.charX - b.x;
               const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
