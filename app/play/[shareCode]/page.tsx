@@ -356,7 +356,7 @@ export default function PlayPage() {
 
   async function handlePostComplete(post: PostWithQuiz, quizScore: number) {
     if (!session) return;
-    const newCompleted    = new Set(completedIds).add(post.id);
+    const newCompleted    = new Set(completedIdsRef.current).add(post.id);
     const newKeys         = (session.keys ?? 0) + 1;
     const newScore        = (session.score ?? 0) + post.score + quizScore;
     const newCompletedArr = Array.from(newCompleted);
