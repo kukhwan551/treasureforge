@@ -430,7 +430,7 @@ export default function ExploreMap({
             ctx.arc(b.x-b.r*0.3, b.y-b.r*0.35, b.r*0.2, 0, Math.PI*2);
             ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
             ctx.restore();
-            if (!obstacleHitRef.current && s.charVisible) {
+            if (!obstacleHitRef.current) {
               const dx = s.charX - b.x;
               const dy = (s.charY - (s.sm ? 14 : 11)) - b.y;
               if (Math.sqrt(dx*dx + dy*dy) < b.r + (s.sm ? 11 : 9)) {
