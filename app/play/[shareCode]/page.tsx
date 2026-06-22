@@ -518,7 +518,7 @@ export default function PlayPage() {
       )}
 
       <div className="fixed left-0 right-0" style={{ top: session ? HUD_HEIGHT : 0, bottom: 0, zIndex: 10 }}>
-        {game.map_url && (
+        {game.map_url && phase !== "puzzle" && (
           <ExploreMap
             mapUrl={game.map_url}
             posts={game.posts}
@@ -532,7 +532,6 @@ export default function PlayPage() {
             obstacleType={game.obstacle_type ?? "none"}
             obstacleLevel={game.obstacle_level ?? "easy"}
             pauseObstacle={phase !== "exploring"}
-            pauseBubbleRef={pauseBubbleRef}
             onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}
@@ -557,14 +556,14 @@ export default function PlayPage() {
         const puzzle = activePost.post_puzzles?.[0];
         if (!puzzle) return null;
         return (
-          <><div style={{position:"fixed",top:10,left:10,zIndex:9999,background:"red",color:"white",padding:"8px",fontSize:"16px"}}>pauseBubble: {String(pauseBubbleRef.current)}</div>
           <PuzzlePopup
             postName={activePost.name}
             puzzle={puzzle}
             seniorMode={seniorMode}
             onComplete={handlePuzzleComplete}
             onSkip={handlePuzzleSkip}
-          /></>);
+          />
+        );
       })()}
 
       <ResultOverlay result={resultOverlay} postName="" seniorMode={seniorMode}

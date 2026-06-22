@@ -20,7 +20,7 @@ interface ExploreMapProps {
   obstacleType?: string;
   obstacleLevel?: string;
   pauseObstacle?: boolean;
-  pauseBubbleRef?: React.MutableRefObject<boolean>;
+  getStateRef?: (ref: React.MutableRefObject<{pauseBubble:boolean;[key:string]:unknown}>) => void;
   onObstacleHit?: () => void;
   onCursorMove: (x: number, y: number) => void;
   onPostClick:  (post: PostWithQuiz) => void;
@@ -152,7 +152,7 @@ export default function ExploreMap({
   obstacleType = "none",
   obstacleLevel = "easy",
   pauseObstacle = false,
-  pauseBubbleRef,
+  getStateRef,
   onObstacleHit,
   onCursorMove, onPostClick,
 }: ExploreMapProps) {
@@ -164,7 +164,10 @@ export default function ExploreMap({
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
   const obstacleHitRef = useRef(false);
-  useEffect(() => { pauseObstacleRef.current = pauseObstacle; stateRef.current.pauseBubble = pauseObstacle; }, [pauseObstacle]);
+  useEffect(() => {
+    pauseObstacleRef.current = pauseObstacle;
+    stateRef.current.pauseBubble = pauseObstacle;
+  }, [pauseObstacle]);
 
   const stateRef = useRef({
     pauseBubble: false,
@@ -418,7 +421,7 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 비누방울 장애물 ──
-        if (obstacleType !== "none" && !(pauseBubbleRef ? pauseBubbleRef.current : s.pauseBubble) && bubblesRef.current.length > 0) {
+        if (obstacleType !== "none" && !s.pauseBubble && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy;
             if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
