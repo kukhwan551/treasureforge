@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("posts")
-    .select("*, quizzes(*), post_puzzles(*)")
+    .select("*, quizzes(*), post_puzzles(*), post_photo_missions(*)")
     .eq("game_id", gameId)
     .eq("is_active", true)
     .order("order_index", { ascending: true });

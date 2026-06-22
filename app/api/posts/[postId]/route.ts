@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("posts").update(body).eq("id", postId)
-    .select("*, quizzes(*)").single();
+    .select("*, quizzes(*), post_photo_missions(*)").single();
   if (error) return NextResponse.json({ error: { message: error.message } }, { status: 500 });
   return NextResponse.json({ data, error: null });
 }
