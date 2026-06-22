@@ -160,7 +160,8 @@ export default function ExploreMap({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // 모든 상태를 하나의 ref 객체로 관리
-  const pauseObstacleRef = useRef(false);
+  const pauseObstacleRef = useRef(pauseObstacle);
+  pauseObstacleRef.current = pauseObstacle; // 렌더마다 즉시 동기화
   useEffect(() => { console.log("[ExploreMap] MOUNTED"); return () => console.log("[ExploreMap] UNMOUNTED"); }, []);
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
@@ -446,7 +447,7 @@ export default function ExploreMap({
             ctx.arc(b.x-b.r*0.3, b.y-b.r*0.35, b.r*0.2, 0, Math.PI*2);
             ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
             ctx.restore();
-            if (!obstacleHitRef.current && !s.pauseBubble) {
+            if (!obstacleHitRef.current && !pauseObstacleRef.current) {
               const charR = s.sm ? 18 : 14;
               const dx = s.charX - b.x;
               const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
