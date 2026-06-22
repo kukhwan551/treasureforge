@@ -15,7 +15,8 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     .select(`
       id, title, description, status, share_code,
       order_mode, reward_message, reward_type, time_limit_sec, compass_assist,
-      reward_expires_at, reward_limit, reward_claimed_count
+      reward_expires_at, reward_limit, reward_claimed_count,
+      obstacle_type, obstacle_level
     `)
     .eq("share_code", shareCode)
     .in("status", ["published", "private"])

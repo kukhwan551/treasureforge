@@ -52,6 +52,8 @@ export interface PublicGame {
   reward_message: string | null;
   reward_type:    "message" | "coupon" | "certificate";
   compass_assist: boolean;
+  obstacle_type:  string;
+  obstacle_level: string;
   map_url:        string | null;
   time_limit_sec: number | null;
   posts:          PostWithQuiz[];

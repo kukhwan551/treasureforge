@@ -387,12 +387,6 @@ export default function PlayPage() {
     }
   }
 
-  function handleObstacleHit() {
-    setCompletedIds(new Set());
-    completedIdsRef.current = new Set();
-    setSession((s) => s ? { ...s, keys: 0, score: 0, completed_post_ids: [] } : null);
-  }
-
   function handleRestart() { clearExploreState(); setSession(null); setPhase("intro"); }
 
   // ── 렌더 ──
@@ -522,9 +516,6 @@ export default function PlayPage() {
             zoom={zoom}
             characterId={characterId}
             compassAssist={game.compass_assist}
-            obstacleType={game.obstacle_type ?? "none"}
-            obstacleLevel={game.obstacle_level ?? "easy"}
-            onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}
           />

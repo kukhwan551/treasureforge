@@ -29,6 +29,8 @@ interface Game {
   reward_expires_at: string | null;
   reward_limit: number | null;
   reward_claimed_count: number;
+  obstacle_type: string;
+  obstacle_level: string;
 }
 
 interface FormState {
@@ -46,6 +48,8 @@ interface FormState {
   is_public: boolean;
   reward_expires_at: string;
   reward_limit: string;
+  obstacle_type: string;
+  obstacle_level: string;
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -110,6 +114,8 @@ export default function EditGamePage() {
     is_public: false,
     reward_expires_at: "",
     reward_limit: "",
+    obstacle_type: "none",
+    obstacle_level: "easy",
   });
   const [errors, setErrors]           = useState<{ title?: string; entry_code?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -141,6 +147,8 @@ export default function EditGamePage() {
         is_public: g.is_public ?? false,
         reward_expires_at: g.reward_expires_at ? new Date(g.reward_expires_at).toISOString().slice(0,16) : "",
         reward_limit: g.reward_limit != null ? String(g.reward_limit) : "",
+        obstacle_type: g.obstacle_type ?? "none",
+        obstacle_level: g.obstacle_level ?? "easy",
       });
     })();
   }, [id]);
@@ -255,6 +263,8 @@ export default function EditGamePage() {
             compass_assist: form.compass_assist,
             reward_expires_at: form.reward_expires_at || null,
             reward_limit: form.reward_limit ? parseInt(form.reward_limit) : null,
+            obstacle_type: form.obstacle_type,
+            obstacle_level: form.obstacle_level,
           }),
         });
         const json = await res.json();

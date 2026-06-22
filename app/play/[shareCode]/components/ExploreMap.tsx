@@ -16,7 +16,10 @@ interface ExploreMapProps {
   seniorMode: boolean;
   zoom: number;                          // ★ 외부에서 제어하는 줌 레벨
   characterId: CharacterId;              // ★ 선택된 캐릭터
-  compassAssist?: boolean;               // ★ 찾기 도움 모드 (나침반)
+  compassAssist?: boolean;
+  obstacleType?: string;
+  obstacleLevel?: string;
+  onObstacleHit?: () => void;
   onCursorMove: (x: number, y: number) => void;
   onPostClick:  (post: PostWithQuiz) => void;
 }
@@ -144,12 +147,18 @@ function drawCharacter(
 export default function ExploreMap({
   mapUrl, posts, completedIds, nearbyIds,
   signalLevel, seniorMode, zoom, characterId, compassAssist,
+  obstacleType = "none",
+  obstacleLevel = "easy",
+  onObstacleHit,
   onCursorMove, onPostClick,
 }: ExploreMapProps) {
   const wrapRef  = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // 모든 상태를 하나의 ref 객체로 관리
+  const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
+  const obstacleHitRef = useRef(false);
+
   const stateRef = useRef({
     img:       null as HTMLImageElement | null,
     imgLoaded: false,
@@ -311,6 +320,26 @@ export default function ExploreMap({
     return () => ro.disconnect();
   }, []); // eslint-disable-line
 
+  // ── 비누방울 초기화 ──
+  useEffect(() => {
+    if (obstacleType === "none") { bubblesRef.current = []; return; }
+    const cfgMap: Record<string, { count:number; speed:number; minR:number; maxR:number }> = {
+      easy:   { count: 3,  speed: 0.35, minR: 8,  maxR: 14 },
+      medium: { count: 6,  speed: 0.65, minR: 10, maxR: 18 },
+      hard:   { count: 10, speed: 1.05, minR: 12, maxR: 22 },
+    };
+    const cfg = cfgMap[obstacleLevel] ?? cfgMap.easy;
+    const cW = canvasRef.current?.width  ?? 400;
+    const cH = canvasRef.current?.height ?? 700;
+    bubblesRef.current = Array.from({ length: cfg.count }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = cfg.speed * (0.7 + Math.random() * 0.6);
+      return { x: Math.random() * cW, y: Math.random() * cH,
+        r: cfg.minR + Math.random() * (cfg.maxR - cfg.minR),
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed };
+    });
+  }, [obstacleType, obstacleLevel]); // eslint-disable-line
+
   // ── RAF 루프 ──
   useEffect(() => {
     let rafId: number;
@@ -379,6 +408,38 @@ export default function ExploreMap({
         }
         drawCharacter(ctx, s.charX, s.charY,
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
+
+        // ── 비누방울 장애물 ──
+        if (obstacleType !== "none" && bubblesRef.current.length > 0) {
+          for (const b of bubblesRef.current) {
+            b.x += b.vx; b.y += b.vy;
+            if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
+            if (b.x + b.r > cW)  { b.x = cW - b.r; b.vx *= -1; }
+            if (b.y - b.r < 0)   { b.y = b.r;       b.vy *= -1; }
+            if (b.y + b.r > cH)  { b.y = cH - b.r; b.vy *= -1; }
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            const grad = ctx.createRadialGradient(b.x-b.r*0.3, b.y-b.r*0.3, b.r*0.1, b.x, b.y, b.r);
+            grad.addColorStop(0, "rgba(255,255,255,0.75)");
+            grad.addColorStop(0.5, "rgba(160,210,255,0.3)");
+            grad.addColorStop(1, "rgba(80,160,255,0.12)");
+            ctx.fillStyle = grad; ctx.fill();
+            ctx.strokeStyle = "rgba(140,190,255,0.65)"; ctx.lineWidth = 1.2; ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(b.x-b.r*0.3, b.y-b.r*0.35, b.r*0.2, 0, Math.PI*2);
+            ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
+            ctx.restore();
+            if (!obstacleHitRef.current && s.charVisible) {
+              const dx = s.charX - b.x;
+              const dy = (s.charY - (s.sm ? 14 : 11)) - b.y;
+              if (Math.sqrt(dx*dx + dy*dy) < b.r + (s.sm ? 11 : 9)) {
+                obstacleHitRef.current = true;
+                setTimeout(() => { obstacleHitRef.current = false; onObstacleHit?.(); }, 300);
+              }
+            }
+          }
+        }
 
         // ── 찾기 도움 모드: 나침반 ──
         if (s.compassAssist && s.mapW > 0) {
