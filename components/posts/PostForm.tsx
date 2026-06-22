@@ -427,11 +427,14 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                   if (!currentPost?.id) return;
                   setSaving(true);
                   try {
-                    await fetch("/api/photo-missions", {
+                    const res = await fetch("/api/photo-missions", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ post_id: currentPost.id, keywords: photoKeywords, guide_text: photoGuideText }),
                     });
+                    const json = await res.json();
+                    if (json.error) alert("저장 실패: " + json.error.message);
+                    else alert("인증샷 설정이 저장되었습니다.");
                   } finally { setSaving(false); }
                 }}
                 className="w-full rounded-xl bg-[#b89a5a] px-4 py-2.5 text-sm font-medium text-[#0f0f10] hover:bg-[#c9aa6a] disabled:opacity-60 transition-colors mt-2">
