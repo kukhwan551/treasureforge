@@ -525,6 +525,7 @@ export default function PlayPage() {
             obstacleType={game.obstacle_type ?? "none"}
             obstacleLevel={game.obstacle_level ?? "easy"}
             pauseObstacle={phase !== "exploring"}
+            phaseRef={phaseRef}
             onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}
