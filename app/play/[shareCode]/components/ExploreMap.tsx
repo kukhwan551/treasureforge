@@ -164,7 +164,7 @@ export default function ExploreMap({
   pauseObstacleRef.current = pauseObstacle; // 렌더마다 즉시 동기화
   
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
-  const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; }>>([]);
+  const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; angle:number; frame:number; }>>([]); 
   const obstacleHitRef = useRef(false);
   useEffect(() => {
     pauseObstacleRef.current = pauseObstacle;
@@ -422,49 +422,206 @@ export default function ExploreMap({
         drawCharacter(ctx, s.charX, s.charY,
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
-        // ── 비누방울 장애물 ──
-        // 퍼즐/퀴즈 중 비누방울 화면 밖으로
+        // ── 장애물 ──
         if (obstacleType !== "none" && s.pauseBubble) {
           for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
         }
         if (obstacleType !== "none" && !s.pauseBubble && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
-            b.x += b.vx; b.y += b.vy;
+            b.x += b.vx; b.y += b.vy; b.frame++;
+            b.angle = Math.atan2(b.vy, b.vx);
             if (b.x - b.r < 0)   { b.x = b.r;      b.vx *= -1; }
             if (b.x + b.r > cW)  { b.x = cW - b.r; b.vx *= -1; }
             if (b.y - b.r < 0)   { b.y = b.r;       b.vy *= -1; }
             if (b.y + b.r > cH)  { b.y = cH - b.r; b.vy *= -1; }
             ctx.save();
-            ctx.beginPath();
-            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-            const grad = ctx.createRadialGradient(b.x-b.r*0.3, b.y-b.r*0.3, b.r*0.1, b.x, b.y, b.r);
-            grad.addColorStop(0, "rgba(255,255,255,0.75)");
-            grad.addColorStop(0.5, "rgba(160,210,255,0.3)");
-            grad.addColorStop(1, "rgba(80,160,255,0.12)");
-            ctx.fillStyle = grad; ctx.fill();
-            ctx.strokeStyle = "rgba(140,190,255,0.65)"; ctx.lineWidth = 1.2; ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(b.x-b.r*0.3, b.y-b.r*0.35, b.r*0.2, 0, Math.PI*2);
-            ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
+            ctx.translate(b.x, b.y);
+
+            if (obstacleType === "bubble") {
+              // ── 비누방울 ──
+              ctx.beginPath();
+              ctx.arc(0, 0, b.r, 0, Math.PI * 2);
+              const grad = ctx.createRadialGradient(-b.r*0.3, -b.r*0.3, b.r*0.1, 0, 0, b.r);
+              grad.addColorStop(0, "rgba(255,255,255,0.75)");
+              grad.addColorStop(0.5, "rgba(160,210,255,0.3)");
+              grad.addColorStop(1, "rgba(80,160,255,0.12)");
+              ctx.fillStyle = grad; ctx.fill();
+              ctx.strokeStyle = "rgba(140,190,255,0.65)"; ctx.lineWidth = 1.2; ctx.stroke();
+              ctx.beginPath();
+              ctx.arc(-b.r*0.3, -b.r*0.35, b.r*0.2, 0, Math.PI*2);
+              ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
+
+            } else if (obstacleType === "goblin") {
+              // ── 창으로 찌르는 도깨비 ──
+              const sc = b.r / 16;
+              const bob = Math.sin(b.frame * 0.15) * 2; // 위아래 흔들림
+              ctx.rotate(b.angle + Math.PI / 2);
+              ctx.translate(0, bob);
+
+              // 몸통 (보라색)
+              ctx.fillStyle = "#7c3aed";
+              ctx.beginPath();
+              ctx.ellipse(0, 4*sc, 8*sc, 10*sc, 0, 0, Math.PI*2);
+              ctx.fill();
+
+              // 머리
+              ctx.fillStyle = "#8b5cf6";
+              ctx.beginPath();
+              ctx.arc(0, -6*sc, 9*sc, 0, Math.PI*2);
+              ctx.fill();
+
+              // 뿔 2개
+              ctx.fillStyle = "#dc2626";
+              ctx.beginPath(); ctx.moveTo(-5*sc, -12*sc); ctx.lineTo(-8*sc, -22*sc); ctx.lineTo(-2*sc, -13*sc); ctx.fill();
+              ctx.beginPath(); ctx.moveTo(5*sc, -12*sc);  ctx.lineTo(8*sc, -22*sc);  ctx.lineTo(2*sc, -13*sc);  ctx.fill();
+
+              // 눈 (빨간 눈)
+              ctx.fillStyle = "#ff0000";
+              ctx.beginPath(); ctx.arc(-3*sc, -7*sc, 2.5*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(3*sc,  -7*sc, 2.5*sc, 0, Math.PI*2); ctx.fill();
+              ctx.fillStyle = "#000";
+              ctx.beginPath(); ctx.arc(-3*sc, -7*sc, 1.2*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(3*sc,  -7*sc, 1.2*sc, 0, Math.PI*2); ctx.fill();
+
+              // 이빨
+              ctx.fillStyle = "#fff";
+              ctx.beginPath(); ctx.moveTo(-4*sc, -2*sc); ctx.lineTo(-2*sc, 1*sc); ctx.lineTo(0, -2*sc); ctx.lineTo(2*sc, 1*sc); ctx.lineTo(4*sc, -2*sc); ctx.fill();
+
+              // 창 (앞 방향으로 찌름 - 위쪽)
+              const spearBob = Math.sin(b.frame * 0.2) * 3; // 창 앞뒤 흔들림
+              ctx.strokeStyle = "#92400e"; ctx.lineWidth = 2.5*sc;
+              ctx.beginPath(); ctx.moveTo(3*sc, -8*sc); ctx.lineTo(6*sc, (-32-spearBob)*sc); ctx.stroke();
+              // 창날
+              ctx.fillStyle = "#e5e7eb";
+              ctx.beginPath(); ctx.moveTo(6*sc, (-38-spearBob)*sc); ctx.lineTo(4*sc, (-32-spearBob)*sc); ctx.lineTo(8*sc, (-32-spearBob)*sc); ctx.fill();
+              // 창날 빛반사
+              ctx.strokeStyle = "#fff"; ctx.lineWidth = 0.8*sc;
+              ctx.beginPath(); ctx.moveTo(6*sc, (-37-spearBob)*sc); ctx.lineTo(5*sc, (-33-spearBob)*sc); ctx.stroke();
+
+            } else if (obstacleType === "beast") {
+              // ── 잡아먹을 듯한 맹수 (호랑이) ──
+              const sc = b.r / 16;
+              const bob = Math.sin(b.frame * 0.12) * 1.5;
+              const jawOpen = (Math.sin(b.frame * 0.18) + 1) * 0.5; // 0~1 입벌림
+              ctx.rotate(b.angle + Math.PI / 2);
+              ctx.translate(0, bob);
+
+              // 몸통
+              ctx.fillStyle = "#d97706";
+              ctx.beginPath();
+              ctx.ellipse(0, 6*sc, 9*sc, 12*sc, 0, 0, Math.PI*2);
+              ctx.fill();
+
+              // 줄무늬
+              ctx.strokeStyle = "#92400e"; ctx.lineWidth = 1.5*sc;
+              ctx.beginPath(); ctx.moveTo(-6*sc, 0); ctx.lineTo(-3*sc, 8*sc); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(6*sc, 0);  ctx.lineTo(3*sc, 8*sc);  ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(-7*sc, 5*sc); ctx.lineTo(-4*sc, 13*sc); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(7*sc, 5*sc);  ctx.lineTo(4*sc, 13*sc);  ctx.stroke();
+
+              // 머리
+              ctx.fillStyle = "#f59e0b";
+              ctx.beginPath();
+              ctx.arc(0, -7*sc, 11*sc, 0, Math.PI*2);
+              ctx.fill();
+
+              // 귀
+              ctx.fillStyle = "#d97706";
+              ctx.beginPath(); ctx.moveTo(-8*sc, -14*sc); ctx.lineTo(-12*sc, -22*sc); ctx.lineTo(-4*sc, -15*sc); ctx.fill();
+              ctx.beginPath(); ctx.moveTo(8*sc, -14*sc);  ctx.lineTo(12*sc, -22*sc);  ctx.lineTo(4*sc, -15*sc);  ctx.fill();
+              ctx.fillStyle = "#fca5a5";
+              ctx.beginPath(); ctx.moveTo(-8*sc, -15*sc); ctx.lineTo(-10*sc, -20*sc); ctx.lineTo(-5*sc, -15*sc); ctx.fill();
+              ctx.beginPath(); ctx.moveTo(8*sc, -15*sc);  ctx.lineTo(10*sc, -20*sc);  ctx.lineTo(5*sc, -15*sc);  ctx.fill();
+
+              // 줄무늬 (머리)
+              ctx.strokeStyle = "#92400e"; ctx.lineWidth = 1.2*sc;
+              ctx.beginPath(); ctx.moveTo(-5*sc, -14*sc); ctx.lineTo(-3*sc, -10*sc); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(5*sc, -14*sc);  ctx.lineTo(3*sc, -10*sc);  ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(0, -17*sc); ctx.lineTo(0, -13*sc); ctx.stroke();
+
+              // 눈 (노란 눈)
+              ctx.fillStyle = "#fbbf24";
+              ctx.beginPath(); ctx.arc(-4*sc, -9*sc, 3*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(4*sc,  -9*sc, 3*sc, 0, Math.PI*2); ctx.fill();
+              ctx.fillStyle = "#1e1b4b";
+              ctx.beginPath(); ctx.arc(-4*sc, -9*sc, 1.5*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(4*sc,  -9*sc, 1.5*sc, 0, Math.PI*2); ctx.fill();
+
+              // 코
+              ctx.fillStyle = "#1e1b4b";
+              ctx.beginPath(); ctx.arc(0, -4*sc, 2*sc, 0, Math.PI*2); ctx.fill();
+
+              // 윗입술/아랫입술 (벌어지는 입)
+              const mouthY = -1*sc;
+              const openAmt = jawOpen * 8 * sc;
+              // 윗니
+              ctx.fillStyle = "#fff7ed";
+              ctx.beginPath();
+              ctx.moveTo(-6*sc, mouthY);
+              ctx.quadraticCurveTo(0, mouthY - 2*sc, 6*sc, mouthY);
+              ctx.lineTo(6*sc, mouthY + 2*sc);
+              ctx.quadraticCurveTo(0, mouthY, -6*sc, mouthY + 2*sc);
+              ctx.fill();
+              // 아랫턱 (열림)
+              ctx.fillStyle = "#dc2626";
+              ctx.beginPath();
+              ctx.moveTo(-6*sc, mouthY + openAmt);
+              ctx.quadraticCurveTo(0, mouthY + openAmt + 5*sc, 6*sc, mouthY + openAmt);
+              ctx.lineTo(6*sc, mouthY);
+              ctx.quadraticCurveTo(0, mouthY + 3*sc, -6*sc, mouthY);
+              ctx.fill();
+              // 아랫니
+              ctx.fillStyle = "#fff";
+              ctx.beginPath(); ctx.moveTo(-5*sc, mouthY+openAmt*0.2); ctx.lineTo(-3*sc, mouthY+openAmt*0.6); ctx.lineTo(-1*sc, mouthY+openAmt*0.2); ctx.fill();
+              ctx.beginPath(); ctx.moveTo(1*sc, mouthY+openAmt*0.2);  ctx.lineTo(3*sc, mouthY+openAmt*0.6);  ctx.lineTo(5*sc, mouthY+openAmt*0.2);  ctx.fill();
+
+              // 수염
+              ctx.strokeStyle = "#fff"; ctx.lineWidth = 1*sc;
+              ctx.beginPath(); ctx.moveTo(-6*sc, -3*sc); ctx.lineTo(-14*sc, -4*sc); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(-6*sc, -1*sc); ctx.lineTo(-14*sc, 0);     ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(6*sc, -3*sc);  ctx.lineTo(14*sc, -4*sc);  ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(6*sc, -1*sc);  ctx.lineTo(14*sc, 0);      ctx.stroke();
+            }
+
             ctx.restore();
+
+            // ── 충돌 감지 (공통) ──
             if (!obstacleHitRef.current && !pauseObstacleRef.current) {
               const charR = s.sm ? 18 : 14;
               const dx = s.charX - b.x;
               const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
               if (Math.sqrt(dx*dx + dy*dy) < b.r + charR) {
                 obstacleHitRef.current = true;
-                // 팝 사운드
                 try {
                   const ac = new AudioContext();
                   const osc = ac.createOscillator();
                   const gain = ac.createGain();
                   osc.connect(gain); gain.connect(ac.destination);
-                  osc.type = "sine";
-                  osc.frequency.setValueAtTime(800, ac.currentTime);
-                  osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.15);
-                  gain.gain.setValueAtTime(0.4, ac.currentTime);
-                  gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
-                  osc.start(); osc.stop(ac.currentTime + 0.2);
+                  if (obstacleType === "goblin") {
+                    // 도깨비: 날카로운 충격음
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(300, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.5, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
+                    osc.start(); osc.stop(ac.currentTime + 0.3);
+                  } else if (obstacleType === "beast") {
+                    // 맹수: 으르렁 저음
+                    osc.type = "square";
+                    osc.frequency.setValueAtTime(120, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.6, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+                    osc.start(); osc.stop(ac.currentTime + 0.4);
+                  } else {
+                    // 버블: 팝
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(800, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.4, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
+                    osc.start(); osc.stop(ac.currentTime + 0.2);
+                  }
                 } catch(e) {}
                 setTimeout(() => { obstacleHitRef.current = false; onObstacleHit?.(); }, 100);
               }
