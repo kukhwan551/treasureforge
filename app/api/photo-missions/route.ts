@@ -8,10 +8,32 @@ export async function POST(req: NextRequest) {
   if (!post_id) return NextResponse.json({ error: { message: "post_id 필요" } }, { status: 400 });
 
   const supabase = createAdminClient();
-  const { data, error } = await supabase
+
+  // 기존 row 확인
+  const { data: existing } = await supabase
     .from("post_photo_missions")
-    .upsert({ post_id, keywords: keywords ?? "", guide_text: guide_text ?? "" }, { onConflict: "post_id" })
-    .select().single();
+    .select("id")
+    .eq("post_id", post_id)
+    .maybeSingle();
+
+  let data, error;
+
+  if (existing?.id) {
+    // 기존 row가 있으면 UPDATE
+    ({ data, error } = await supabase
+      .from("post_photo_missions")
+      .update({ keywords: keywords ?? "", guide_text: guide_text ?? "" })
+      .eq("id", existing.id)
+      .select()
+      .single());
+  } else {
+    // 없으면 INSERT
+    ({ data, error } = await supabase
+      .from("post_photo_missions")
+      .insert({ post_id, keywords: keywords ?? "", guide_text: guide_text ?? "" })
+      .select()
+      .single());
+  }
 
   if (error) return NextResponse.json({ error: { message: error.message } }, { status: 500 });
   return NextResponse.json({ data, error: null });
