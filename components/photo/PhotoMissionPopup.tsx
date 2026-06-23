@@ -1,7 +1,7 @@
 "use client";
 // components/photo/PhotoMissionPopup.tsx
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { PostWithQuiz } from "@/types/explore";
 
 interface PhotoMissionPopupProps {
@@ -28,21 +28,42 @@ export default function PhotoMissionPopup({
   const ts = seniorMode ? "text-xl" : "text-base";
   const th = seniorMode ? "text-2xl" : "text-lg";
 
-
+  // 성공 후 3초 뒤 자동으로 탐험 화면으로 복귀
+  useEffect(() => {
+    if (status !== "pass") return;
+    const timer = setTimeout(() => onComplete(), 3000);
+    return () => clearTimeout(timer);
+  }, [status, onComplete]);
 
   function handleFile(file: File) {
     if (!file) return;
     setStatus("uploading");
-    const r1 = new FileReader();
-    r1.onload = e => setPreview(e.target?.result as string);
-    r1.readAsDataURL(file);
-    const r2 = new FileReader();
-    r2.onload = e => {
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
-      setImageData({ base64: dataUrl.split(",")[1], mediaType: file.type });
-      setStatus("idle");
+      setPreview(dataUrl);
+
+      // Canvas로 리사이즈 (최대 1200px, 품질 0.8) → 약 300~500KB로 압축
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1200;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL("image/jpeg", 0.8);
+        setImageData({ base64: compressed.split(",")[1], mediaType: "image/jpeg" });
+        setStatus("idle");
+      };
+      img.src = dataUrl;
     };
-    r2.readAsDataURL(file);
+    reader.readAsDataURL(file);
   }
 
   async function handleVerify() {
@@ -61,8 +82,6 @@ export default function PhotoMissionPopup({
         setStatus("pass");
         setMessage(result.description || "인증 성공!");
         setMatchedKeyword(result.matched_keyword ?? null);
-        // 즉시 완료 콜백 호출 (축하 효과는 play/page.tsx에서 처리)
-        setTimeout(() => onComplete(), 800);
       } else {
         setStatus("fail");
         setMessage(result.description || "사진에서 인증 정보를 찾을 수 없습니다. 다시 시도해주세요.");
@@ -71,6 +90,47 @@ export default function PhotoMissionPopup({
       setStatus("fail");
       setMessage(err instanceof Error ? err.message : "오류가 발생했습니다.");
     }
+  }
+
+  // ── 성공 화면 ──
+  if (status === "pass") {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f0f10]/95 px-4">
+        <div className="w-full max-w-md text-center space-y-6">
+          <div className="text-7xl animate-bounce">🎉</div>
+          <div>
+            <h2 className={`font-bold text-[#4a9d6f] mb-2 ${seniorMode ? "text-3xl" : "text-2xl"}`}>
+              인증 성공!
+            </h2>
+            <p className={`text-[#e8e4d9] font-medium ${seniorMode ? "text-xl" : "text-base"}`}>
+              {post.name}
+            </p>
+            {matchedKeyword && (
+              <p className={`text-[#b89a5a] mt-1 ${seniorMode ? "text-lg" : "text-sm"}`}>
+                ✅ {matchedKeyword} 확인됨
+              </p>
+            )}
+          </div>
+          {message && (
+            <div className="rounded-2xl border border-[#4a9d6f]/30 bg-[#4a9d6f]/10 px-5 py-4">
+              <p className={`text-[#4a9d6f] leading-relaxed ${seniorMode ? "text-lg" : "text-sm"}`}>
+                {message}
+              </p>
+            </div>
+          )}
+          <div className="space-y-3">
+            <button onClick={onComplete}
+              className={`w-full rounded-xl bg-[#4a9d6f] font-bold text-white
+                hover:bg-[#5aad7f] transition-colors ${seniorMode ? "py-5 text-xl" : "py-3 text-base"}`}>
+              🗺️ 탐험 계속하기
+            </button>
+            <p className={`text-[#4a4840] ${seniorMode ? "text-base" : "text-xs"}`}>
+              3초 후 자동으로 이동합니다
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
