@@ -349,7 +349,8 @@ export default function ExploreMap({
       const speed = cfg.speed * (0.7 + Math.random() * 0.6);
       return { x: Math.random() * cW, y: Math.random() * cH,
         r: cfg.minR + Math.random() * (cfg.maxR - cfg.minR),
-        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed };
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        angle: angle, frame: Math.floor(Math.random() * 60) };
     });
   }, [obstacleType, obstacleLevel]); // eslint-disable-line
 
