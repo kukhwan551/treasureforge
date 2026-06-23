@@ -45,11 +45,11 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
   );
   const [photoKeywords,  setPhotoKeywords]  = useState(
     (initial as unknown as { post_photo_missions?: {keywords:string;guide_text:string}[] })
-      ?.post_photo_missions?.[0]?.keywords ?? ""
+      ?.post_photo_missions ? (Array.isArray((initial as unknown as {post_photo_missions:unknown}).post_photo_missions) ? (initial as unknown as {post_photo_missions:{keywords:string}[]}).post_photo_missions[0]?.keywords : (initial as unknown as {post_photo_missions:{keywords:string}}).post_photo_missions.keywords) ?? "" : ""
   );
   const [photoGuideText, setPhotoGuideText] = useState(
     (initial as unknown as { post_photo_missions?: {keywords:string;guide_text:string}[] })
-      ?.post_photo_missions?.[0]?.guide_text ?? ""
+      ?.post_photo_missions ? (Array.isArray((initial as unknown as {post_photo_missions:unknown}).post_photo_missions) ? (initial as unknown as {post_photo_missions:{guide_text:string}[]}).post_photo_missions[0]?.guide_text : (initial as unknown as {post_photo_missions:{guide_text:string}}).post_photo_missions.guide_text) ?? "" : ""
   );
 
   const [errors,  setErrors]  = useState<Record<string, string>>({});

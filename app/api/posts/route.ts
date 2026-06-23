@@ -18,7 +18,14 @@ export async function GET(req: NextRequest) {
     .order("order_index", { ascending: true });
 
   if (error) return NextResponse.json({ error: { message: error.message } }, { status: 500 });
-  return NextResponse.json({ data: data ?? [], error: null });
+  // post_photo_missions를 항상 배열로 정규화
+  const normalized = (data ?? []).map((p: Record<string, unknown>) => ({
+    ...p,
+    post_photo_missions: p.post_photo_missions
+      ? Array.isArray(p.post_photo_missions) ? p.post_photo_missions : [p.post_photo_missions]
+      : [],
+  }));
+  return NextResponse.json({ data: normalized, error: null });
 }
 
 export async function POST(req: NextRequest) {
