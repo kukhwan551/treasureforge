@@ -1,14 +1,12 @@
 // app/api/play/[shareCode]/route.ts
-// 수정: posts에 puzzle 데이터 포함
-
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type RouteContext = { params: Promise<{ shareCode: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   const { shareCode } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient(); // ← Admin 클라이언트 (RLS 우회, 비로그인도 OK)
 
   const { data: game, error: gameErr } = await supabase
     .from("games")
