@@ -560,7 +560,26 @@ export default function PlayPage() {
         <PhotoMissionPopup
           post={activePost}
           seniorMode={seniorMode}
-          onComplete={() => { pauseBubbleRef.current = false; handlePostComplete(activePost, 0); }}
+          onComplete={() => {
+            pauseBubbleRef.current = false;
+            setActivePost(null);
+            setPhase("exploring");
+            if (soundEnabled) playCorrectSound();
+            setConfettiActive(true);
+            setResultOverlay("correct");
+            const px = Number(activePost.coord_x) ?? 50;
+            const py = Number(activePost.coord_y) ?? 50;
+            setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
+            const g = gameRef.current;
+            const completed = completedIdsRef.current;
+            const isLast = g ? (completed.size + 1 >= g.posts.length) : false;
+            const delay = isLast ? 1500 : 5600;
+            setTimeout(() => {
+              setConfettiActive(false);
+              setKeyFly((k) => ({ ...k, active: false }));
+              handlePostComplete(activePost, 0);
+            }, delay);
+          }}
           onSkip={() => { pauseBubbleRef.current = false; setActivePost(null); setPhase("exploring"); }}
         />
       )}
