@@ -169,6 +169,28 @@ export default function ExploreMap({
   useEffect(() => {
     pauseObstacleRef.current = pauseObstacle;
     stateRef.current.pauseBubble = pauseObstacle;
+    // 퀴즈/퍼즐/미션 완료 후 재개 시 장애물 위치 재분산
+    if (!pauseObstacle && bubblesRef.current.length > 0) {
+      const cW = canvasRef.current?.width  ?? 400;
+      const cH = canvasRef.current?.height ?? 700;
+      const count = bubblesRef.current.length;
+      const cols = Math.ceil(Math.sqrt(count));
+      const rows = Math.ceil(count / cols);
+      const cellW = cW / cols;
+      const cellH = cH / rows;
+      bubblesRef.current.forEach((b, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = cellW * (col + 0.5) + (Math.random() - 0.5) * cellW * 0.6;
+        const y = cellH * (row + 0.5) + (Math.random() - 0.5) * cellH * 0.6;
+        b.x = Math.max(20, Math.min(cW - 20, x));
+        b.y = Math.max(20, Math.min(cH - 20, y));
+        const angle = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(angle) * Math.abs(b.vx || 0.5);
+        b.vy = Math.sin(angle) * Math.abs(b.vy || 0.5);
+        b.frame = Math.floor(Math.random() * 60);
+      });
+    }
   }, [pauseObstacle]);
 
   const stateRef = useRef({
