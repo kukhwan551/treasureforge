@@ -453,51 +453,87 @@ export default function ExploreMap({
               ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
 
             } else if (obstacleType === "goblin") {
-              // ── 창으로 찌르는 도깨비 ──
+              // ── 뿔로 찌르는 도깨비 ──
               const sc = b.r / 16;
-              const bob = Math.sin(b.frame * 0.15) * 2; // 위아래 흔들림
+              const charge = Math.abs(Math.sin(b.frame * 0.18)) * 3; // 돌진 앞뒤
               ctx.rotate(b.angle + Math.PI / 2);
-              ctx.translate(0, bob);
+              ctx.translate(0, -charge);
 
               // 몸통 (보라색)
               ctx.fillStyle = "#7c3aed";
               ctx.beginPath();
-              ctx.ellipse(0, 4*sc, 8*sc, 10*sc, 0, 0, Math.PI*2);
+              ctx.ellipse(0, 5*sc, 8*sc, 11*sc, 0, 0, Math.PI*2);
               ctx.fill();
+
+              // 팔 (옆으로 벌린 모습)
+              ctx.strokeStyle = "#6d28d9"; ctx.lineWidth = 3*sc;
+              ctx.beginPath(); ctx.moveTo(-8*sc, 0); ctx.lineTo(-16*sc, 4*sc); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(8*sc, 0);  ctx.lineTo(16*sc, 4*sc);  ctx.stroke();
 
               // 머리
               ctx.fillStyle = "#8b5cf6";
               ctx.beginPath();
-              ctx.arc(0, -6*sc, 9*sc, 0, Math.PI*2);
+              ctx.arc(0, -6*sc, 10*sc, 0, Math.PI*2);
               ctx.fill();
 
-              // 뿔 2개
+              // 뿔 2개 (크고 앞으로 향함 - 돌진 연출)
               ctx.fillStyle = "#dc2626";
-              ctx.beginPath(); ctx.moveTo(-5*sc, -12*sc); ctx.lineTo(-8*sc, -22*sc); ctx.lineTo(-2*sc, -13*sc); ctx.fill();
-              ctx.beginPath(); ctx.moveTo(5*sc, -12*sc);  ctx.lineTo(8*sc, -22*sc);  ctx.lineTo(2*sc, -13*sc);  ctx.fill();
+              // 왼쪽 뿔
+              ctx.beginPath();
+              ctx.moveTo(-4*sc, -13*sc);
+              ctx.lineTo(-10*sc, -30*sc - charge*1.5);
+              ctx.lineTo(-1*sc, -15*sc);
+              ctx.fill();
+              // 왼쪽 뿔 하이라이트
+              ctx.fillStyle = "#f87171";
+              ctx.beginPath();
+              ctx.moveTo(-5*sc, -14*sc);
+              ctx.lineTo(-8*sc, -26*sc - charge*1.5);
+              ctx.lineTo(-4*sc, -14*sc);
+              ctx.fill();
 
-              // 눈 (빨간 눈)
+              // 오른쪽 뿔
+              ctx.fillStyle = "#dc2626";
+              ctx.beginPath();
+              ctx.moveTo(4*sc, -13*sc);
+              ctx.lineTo(10*sc, -30*sc - charge*1.5);
+              ctx.lineTo(1*sc, -15*sc);
+              ctx.fill();
+              // 오른쪽 뿔 하이라이트
+              ctx.fillStyle = "#f87171";
+              ctx.beginPath();
+              ctx.moveTo(5*sc, -14*sc);
+              ctx.lineTo(8*sc, -26*sc - charge*1.5);
+              ctx.lineTo(4*sc, -14*sc);
+              ctx.fill();
+
+              // 눈 (빨간 눈 - 화난 표정)
               ctx.fillStyle = "#ff0000";
-              ctx.beginPath(); ctx.arc(-3*sc, -7*sc, 2.5*sc, 0, Math.PI*2); ctx.fill();
-              ctx.beginPath(); ctx.arc(3*sc,  -7*sc, 2.5*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(-3.5*sc, -7*sc, 2.8*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(3.5*sc,  -7*sc, 2.8*sc, 0, Math.PI*2); ctx.fill();
               ctx.fillStyle = "#000";
-              ctx.beginPath(); ctx.arc(-3*sc, -7*sc, 1.2*sc, 0, Math.PI*2); ctx.fill();
-              ctx.beginPath(); ctx.arc(3*sc,  -7*sc, 1.2*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(-3.5*sc, -6.5*sc, 1.3*sc, 0, Math.PI*2); ctx.fill();
+              ctx.beginPath(); ctx.arc(3.5*sc,  -6.5*sc, 1.3*sc, 0, Math.PI*2); ctx.fill();
+              // 눈썹 (화난)
+              ctx.strokeStyle = "#1e1b4b"; ctx.lineWidth = 1.5*sc;
+              ctx.beginPath(); ctx.moveTo(-6*sc, -11*sc); ctx.lineTo(-1*sc, -9.5*sc); ctx.stroke();
+              ctx.beginPath(); ctx.moveTo(6*sc, -11*sc);  ctx.lineTo(1*sc, -9.5*sc);  ctx.stroke();
 
-              // 이빨
+              // 코
+              ctx.fillStyle = "#4c1d95";
+              ctx.beginPath(); ctx.arc(0, -3.5*sc, 1.5*sc, 0, Math.PI*2); ctx.fill();
+
+              // 입 (이빨 드러냄)
               ctx.fillStyle = "#fff";
-              ctx.beginPath(); ctx.moveTo(-4*sc, -2*sc); ctx.lineTo(-2*sc, 1*sc); ctx.lineTo(0, -2*sc); ctx.lineTo(2*sc, 1*sc); ctx.lineTo(4*sc, -2*sc); ctx.fill();
-
-              // 창 (앞 방향으로 찌름 - 위쪽)
-              const spearBob = Math.sin(b.frame * 0.2) * 3; // 창 앞뒤 흔들림
-              ctx.strokeStyle = "#92400e"; ctx.lineWidth = 2.5*sc;
-              ctx.beginPath(); ctx.moveTo(3*sc, -8*sc); ctx.lineTo(6*sc, (-32-spearBob)*sc); ctx.stroke();
-              // 창날
-              ctx.fillStyle = "#e5e7eb";
-              ctx.beginPath(); ctx.moveTo(6*sc, (-38-spearBob)*sc); ctx.lineTo(4*sc, (-32-spearBob)*sc); ctx.lineTo(8*sc, (-32-spearBob)*sc); ctx.fill();
-              // 창날 빛반사
-              ctx.strokeStyle = "#fff"; ctx.lineWidth = 0.8*sc;
-              ctx.beginPath(); ctx.moveTo(6*sc, (-37-spearBob)*sc); ctx.lineTo(5*sc, (-33-spearBob)*sc); ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(-5*sc, -1*sc);
+              ctx.lineTo(-3*sc, 2.5*sc);
+              ctx.lineTo(-1*sc, -1*sc);
+              ctx.lineTo(1*sc, 2.5*sc);
+              ctx.lineTo(3*sc, -1*sc);
+              ctx.lineTo(5*sc, 2.5*sc);
+              ctx.lineTo(6*sc, -1*sc);
+              ctx.fill();
 
             } else if (obstacleType === "beast") {
               // ── 잡아먹을 듯한 맹수 (호랑이) ──
