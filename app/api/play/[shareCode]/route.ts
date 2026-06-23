@@ -82,7 +82,12 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       ...game,
       is_exhausted,
       map_url: mapData?.public_url ?? null,
-      posts:   posts ?? [],
+      posts: (posts ?? []).map((p: Record<string, unknown>) => ({
+        ...p,
+        post_photo_missions: p.post_photo_missions
+          ? Array.isArray(p.post_photo_missions) ? p.post_photo_missions : [p.post_photo_missions]
+          : [],
+      })),
     },
     error: null,
   });

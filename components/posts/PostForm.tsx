@@ -31,6 +31,14 @@ interface PostFormProps {
   onCancel: () => void;
 }
 
+
+function getPhotoMission(initial: Post | undefined) {
+  if (!initial) return { keywords: "", guide_text: "" };
+  const pm = (initial as unknown as Record<string, unknown>).post_photo_missions;
+  if (!pm) return { keywords: "", guide_text: "" };
+  const obj = Array.isArray(pm) ? pm[0] : pm;
+  return { keywords: (obj as {keywords:string})?.keywords ?? "", guide_text: (obj as {guide_text:string})?.guide_text ?? "" };
+}
 type MissionType = "quiz" | "puzzle" | "photo";
 
 export default function PostForm({ gameId, game, initial, onSaved, onCancel }: PostFormProps) {
@@ -43,14 +51,9 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
   const [missionType,  setMissionType]  = useState<MissionType>(
     (initial?.mission_type as MissionType) ?? "quiz"
   );
-  const [photoKeywords,  setPhotoKeywords]  = useState(
-    (initial as unknown as { post_photo_missions?: {keywords:string;guide_text:string}[] })
-      ?.post_photo_missions ? (Array.isArray((initial as unknown as {post_photo_missions:unknown}).post_photo_missions) ? (initial as unknown as {post_photo_missions:{keywords:string}[]}).post_photo_missions[0]?.keywords : (initial as unknown as {post_photo_missions:{keywords:string}}).post_photo_missions.keywords) ?? "" : ""
-  );
-  const [photoGuideText, setPhotoGuideText] = useState(
-    (initial as unknown as { post_photo_missions?: {keywords:string;guide_text:string}[] })
-      ?.post_photo_missions ? (Array.isArray((initial as unknown as {post_photo_missions:unknown}).post_photo_missions) ? (initial as unknown as {post_photo_missions:{guide_text:string}[]}).post_photo_missions[0]?.guide_text : (initial as unknown as {post_photo_missions:{guide_text:string}}).post_photo_missions.guide_text) ?? "" : ""
-  );
+    const [photoKeywords,  setPhotoKeywords]  = useState(getPhotoMission(initial).keywords);
+  const [photoGuideText, setPhotoGuideText] = useState(getPhotoMission(initial).guide_text);
+  
 
   const [errors,  setErrors]  = useState<Record<string, string>>({});
   const [saving,  setSaving]  = useState(false);
