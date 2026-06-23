@@ -36,7 +36,7 @@ function getPhotoMission(initial: Post | undefined) {
   if (!initial) return { keywords: "", guide_text: "" };
   const pm = initial.post_photo_missions;
   if (!pm || pm.length === 0) return { keywords: "", guide_text: "" };
-  return { keywords: pm[0].keywords ?? "", guide_text: pm[0].guide_text ?? "" };
+  return { keywords: pm[0]?.keywords ?? "", guide_text: pm[0]?.guide_text ?? "" };
 }
 type MissionType = "quiz" | "puzzle" | "photo";
 
@@ -130,7 +130,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
         quizzes,
         post_photo_missions: missionType === "photo"
           ? [{ keywords: photoKeywords, guide_text: photoGuideText }]
-          : saved.post_photo_missions ?? [],
+          : (saved.post_photo_missions ?? []),
       };
       setSavedPost(fullSaved);
       onSaved(fullSaved);
@@ -443,7 +443,6 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                     const json = await res.json();
                     if (json.error) { alert("저장 실패: " + json.error.message); }
                     else {
-                      // savedPost와 부모 posts 배열 모두 업데이트
                       const updatedMission = [{ keywords: photoKeywords, guide_text: photoGuideText }];
                       setSavedPost(prev => {
                         if (!prev) return prev;
