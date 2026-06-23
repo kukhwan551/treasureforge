@@ -1,7 +1,7 @@
 "use client";
 // components/photo/PhotoMissionPopup.tsx
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import type { PostWithQuiz } from "@/types/explore";
 
 interface PhotoMissionPopupProps {
@@ -22,18 +22,10 @@ export default function PhotoMissionPopup({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const pm = post.post_photo_missions?.[0];
-
   const guideText = pm?.guide_text || "이 장소에서 사진을 찍어 인증해주세요.";
   const keywords  = pm?.keywords   || "";
   const ts = seniorMode ? "text-xl" : "text-base";
   const th = seniorMode ? "text-2xl" : "text-lg";
-
-  // 성공 후 3초 뒤 자동으로 탐험 화면으로 복귀
-  useEffect(() => {
-    if (status !== "pass") return;
-    const timer = setTimeout(() => onComplete(), 3000);
-    return () => clearTimeout(timer);
-  }, [status, onComplete]);
 
   function handleFile(file: File) {
     if (!file) return;
@@ -70,7 +62,7 @@ export default function PhotoMissionPopup({
     if (!imageData) return;
     setStatus("checking"); setMessage("");
     try {
-      const res  = await fetch("/api/photo-missions/verify", {
+      const res = await fetch("/api/photo-missions/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageBase64: imageData.base64, mediaType: imageData.mediaType, keywords }),
@@ -82,6 +74,7 @@ export default function PhotoMissionPopup({
         setStatus("pass");
         setMessage(result.description || "인증 성공!");
         setMatchedKeyword(result.matched_keyword ?? null);
+        setTimeout(() => onComplete(), 800);
       } else {
         setStatus("fail");
         setMessage(result.description || "사진에서 인증 정보를 찾을 수 없습니다. 다시 시도해주세요.");
@@ -90,47 +83,6 @@ export default function PhotoMissionPopup({
       setStatus("fail");
       setMessage(err instanceof Error ? err.message : "오류가 발생했습니다.");
     }
-  }
-
-  // ── 성공 화면 ──
-  if (status === "pass") {
-    return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f0f10]/95 px-4">
-        <div className="w-full max-w-md text-center space-y-6">
-          <div className="text-7xl animate-bounce">🎉</div>
-          <div>
-            <h2 className={`font-bold text-[#4a9d6f] mb-2 ${seniorMode ? "text-3xl" : "text-2xl"}`}>
-              인증 성공!
-            </h2>
-            <p className={`text-[#e8e4d9] font-medium ${seniorMode ? "text-xl" : "text-base"}`}>
-              {post.name}
-            </p>
-            {matchedKeyword && (
-              <p className={`text-[#b89a5a] mt-1 ${seniorMode ? "text-lg" : "text-sm"}`}>
-                ✅ {matchedKeyword} 확인됨
-              </p>
-            )}
-          </div>
-          {message && (
-            <div className="rounded-2xl border border-[#4a9d6f]/30 bg-[#4a9d6f]/10 px-5 py-4">
-              <p className={`text-[#4a9d6f] leading-relaxed ${seniorMode ? "text-lg" : "text-sm"}`}>
-                {message}
-              </p>
-            </div>
-          )}
-          <div className="space-y-3">
-            <button onClick={onComplete}
-              className={`w-full rounded-xl bg-[#4a9d6f] font-bold text-white
-                hover:bg-[#5aad7f] transition-colors ${seniorMode ? "py-5 text-xl" : "py-3 text-base"}`}>
-              🗺️ 탐험 계속하기
-            </button>
-            <p className={`text-[#4a4840] ${seniorMode ? "text-base" : "text-xs"}`}>
-              3초 후 자동으로 이동합니다
-            </p>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -160,7 +112,11 @@ export default function PhotoMissionPopup({
               </div>
             </div>
           )}
-
+          {status === "pass" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#0f0f10]/70 rounded-2xl">
+              <p className="text-5xl">✅</p>
+            </div>
+          )}
         </div>
 
         <input ref={inputRef} type="file" accept="image/*" capture="environment"
@@ -173,6 +129,9 @@ export default function PhotoMissionPopup({
               ? "bg-[#4a9d6f]/15 border border-[#4a9d6f]/30 text-[#4a9d6f]"
               : "bg-[#e07070]/10 border border-[#e07070]/20 text-[#e07070]"}`}>
             {message}
+            {status === "pass" && matchedKeyword && (
+              <p className="mt-1 font-medium">✅ {matchedKeyword} 확인됨</p>
+            )}
           </div>
         )}
 
