@@ -45,6 +45,12 @@ export default function PhotoMissionPopup({
   async function handleVerify() {
     if (!imageData) return;
     setStatus("checking"); setMessage("");
+    // 키워드 디버깅: 키워드가 없으면 사용자에게 바로 알림
+    if (!keywords || !keywords.trim()) {
+      setStatus("fail");
+      setMessage("인증샷 키워드가 설정되지 않았습니다. 게임 관리자에게 문의해주세요.");
+      return;
+    }
     try {
       const res  = await fetch("/api/photo-missions/verify", {
         method: "POST",

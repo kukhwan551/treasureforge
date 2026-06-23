@@ -34,9 +34,10 @@ interface PostFormProps {
 
 function getPhotoMission(initial: Post | undefined) {
   if (!initial) return { keywords: "", guide_text: "" };
-  const pm = initial.post_photo_missions;
-  if (!pm || pm.length === 0) return { keywords: "", guide_text: "" };
-  return { keywords: pm[0].keywords ?? "", guide_text: pm[0].guide_text ?? "" };
+  const pm = (initial as unknown as Record<string, unknown>).post_photo_missions;
+  if (!pm) return { keywords: "", guide_text: "" };
+  const obj = Array.isArray(pm) ? pm[0] : pm;
+  return { keywords: (obj as {keywords:string})?.keywords ?? "", guide_text: (obj as {guide_text:string})?.guide_text ?? "" };
 }
 type MissionType = "quiz" | "puzzle" | "photo";
 
@@ -125,7 +126,13 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
           body: JSON.stringify({ post_id: saved.id, keywords: photoKeywords, guide_text: photoGuideText }),
         });
       }
-      const fullSaved = { ...saved, quizzes };
+      const fullSaved = {
+        ...saved,
+        quizzes,
+        post_photo_missions: missionType === "photo"
+          ? [{ keywords: photoKeywords, guide_text: photoGuideText }]
+          : (saved as Post & { post_photo_missions?: { keywords: string; guide_text: string }[] }).post_photo_missions ?? [],
+      };
       setSavedPost(fullSaved);
       onSaved(fullSaved);
     } catch (err) {
@@ -437,8 +444,11 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                     const json = await res.json();
                     if (json.error) { alert("저장 실패: " + json.error.message); }
                     else {
-                      setPhotoKeywords(photoKeywords);
-                      setPhotoGuideText(photoGuideText);
+                      // savedPost에 post_photo_missions 반영 (다음에 열었을 때 최신값 표시)
+                      setSavedPost(prev => prev
+                        ? { ...prev, post_photo_missions: [{ keywords: photoKeywords, guide_text: photoGuideText }] }
+                        : prev
+                      );
                       alert("인증샷 설정이 저장되었습니다.");
                     }
                   } finally { setSaving(false); }
