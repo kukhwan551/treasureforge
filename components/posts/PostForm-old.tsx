@@ -34,9 +34,10 @@ interface PostFormProps {
 
 function getPhotoMission(initial: Post | undefined) {
   if (!initial) return { keywords: "", guide_text: "" };
-  const pm = initial.post_photo_missions;
-  if (!pm || pm.length === 0) return { keywords: "", guide_text: "" };
-  return { keywords: pm[0].keywords ?? "", guide_text: pm[0].guide_text ?? "" };
+  const pm = (initial as unknown as Record<string, unknown>).post_photo_missions;
+  if (!pm) return { keywords: "", guide_text: "" };
+  const obj = Array.isArray(pm) ? pm[0] : pm;
+  return { keywords: (obj as {keywords:string})?.keywords ?? "", guide_text: (obj as {guide_text:string})?.guide_text ?? "" };
 }
 type MissionType = "quiz" | "puzzle" | "photo";
 
