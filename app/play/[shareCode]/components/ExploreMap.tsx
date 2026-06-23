@@ -344,10 +344,21 @@ export default function ExploreMap({
     const cfg = cfgMap[obstacleLevel] ?? cfgMap.easy;
     const cW = canvasRef.current?.width  ?? 400;
     const cH = canvasRef.current?.height ?? 700;
-    bubblesRef.current = Array.from({ length: cfg.count }, () => {
+    // 화면을 격자로 나눠 각 구역 중앙에서 시작 (사방 균등 분산)
+    const cols = Math.ceil(Math.sqrt(cfg.count));
+    const rows = Math.ceil(cfg.count / cols);
+    const cellW = cW / cols;
+    const cellH = cH / rows;
+    bubblesRef.current = Array.from({ length: cfg.count }, (_, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      // 각 구역 중앙 ± 30% 랜덤 오프셋
+      const x = cellW * (col + 0.5) + (Math.random() - 0.5) * cellW * 0.6;
+      const y = cellH * (row + 0.5) + (Math.random() - 0.5) * cellH * 0.6;
       const angle = Math.random() * Math.PI * 2;
       const speed = cfg.speed * (0.7 + Math.random() * 0.6);
-      return { x: Math.random() * cW, y: Math.random() * cH,
+      return { x: Math.max(20, Math.min(cW-20, x)),
+        y: Math.max(20, Math.min(cH-20, y)),
         r: cfg.minR + Math.random() * (cfg.maxR - cfg.minR),
         vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
         angle: angle, frame: Math.floor(Math.random() * 60) };
