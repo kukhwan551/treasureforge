@@ -1066,6 +1066,32 @@ export default function ExploreMap({
     return () => cancelAnimationFrame(rafId);
   }, [onCursorMove]); // eslint-disable-line
 
+  // 장애물 위치 재분산
+  function redistributeBubbles() {
+    const cvs = canvasRef.current;
+    if (!cvs || bubblesRef.current.length === 0) return;
+    const cW = cvs.width;
+    const cH = cvs.height;
+    const count = bubblesRef.current.length;
+    const cols = Math.ceil(Math.sqrt(count));
+    const rows = Math.ceil(count / cols);
+    const cellW = cW / cols;
+    const cellH = cH / rows;
+    bubblesRef.current.forEach((b, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = cellW * (col + 0.5) + (Math.random() - 0.5) * cellW * 0.6;
+      const y = cellH * (row + 0.5) + (Math.random() - 0.5) * cellH * 0.6;
+      b.x = Math.max(20, Math.min(cW - 20, x));
+      b.y = Math.max(20, Math.min(cH - 20, y));
+      const angle = Math.random() * Math.PI * 2;
+      const spd = obstacleSpeedRef.current * (0.7 + Math.random() * 0.6);
+      b.vx = Math.cos(angle) * spd;
+      b.vy = Math.sin(angle) * spd;
+      b.frame = Math.floor(Math.random() * 60);
+    });
+  }
+
   // 공통 포인터 처리
   function processPos(clientX: number, clientY: number) {
     const wrap = wrapRef.current;
@@ -1118,8 +1144,11 @@ export default function ExploreMap({
     let stopT: ReturnType<typeof setTimeout> | null = null;
     function onMove(e: MouseEvent) {
       processPos(e.clientX, e.clientY);
-      // 마우스 이동 시 장애물 재개 (퍼즐 완료 후 자연스럽게 재개)
-      if (isObstaclePausedGlobal()) setObstaclePaused(false);
+      // 마우스 이동 시 장애물 재개 + 위치 재분산
+      if (isObstaclePausedGlobal()) {
+        setObstaclePaused(false);
+        redistributeBubbles();
+      }
       if (stopT) clearTimeout(stopT);
       stopT = setTimeout(() => { stateRef.current.moving = false; }, 150);
     }
@@ -1154,8 +1183,11 @@ export default function ExploreMap({
       if (Math.abs(t.clientX-s.tapStartX)>10 || Math.abs(t.clientY-s.tapStartY)>10)
         s.isTap = false;
       processPos(t.clientX, t.clientY);
-      // 터치 이동 시 장애물 재개 (퍼즐 완료 후 자연스럽게 재개)
-      if (isObstaclePausedGlobal()) setObstaclePaused(false);
+      // 터치 이동 시 장애물 재개 + 위치 재분산
+      if (isObstaclePausedGlobal()) {
+        setObstaclePaused(false);
+        redistributeBubbles();
+      }
       if (stopT) clearTimeout(stopT);
       stopT = setTimeout(() => { s.moving = false; }, 200);
     }
