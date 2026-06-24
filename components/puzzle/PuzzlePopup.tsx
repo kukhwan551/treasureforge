@@ -55,7 +55,7 @@ export default function PuzzlePopup({
   function handlePuzzleComplete() {
     if (timerRef.current) clearInterval(timerRef.current);
     setPhase("success");
-    setTimeout(onComplete, 1800);
+    setTimeout(onComplete, 300); // 즉시 완료 (축하 애니메이션은 play/page.tsx에서 처리)
   }
 
   function handleRetry() {
