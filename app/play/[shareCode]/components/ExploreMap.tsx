@@ -428,14 +428,7 @@ export default function ExploreMap({
       if (_isPaused && bubblesRef.current.length > 0) {
         for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
       }
-      // 디버그: pause 상태 화면 표시
-      ctx.save();
-      ctx.fillStyle = _isPaused ? "rgba(0,255,0,0.9)" : "rgba(255,0,0,0.9)";
-      ctx.fillRect(10, 10, 120, 35);
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillText(_isPaused ? "PAUSED" : "RUNNING", 15, 33);
-      ctx.restore();
+
 
       // 자동 패닝
       if (s.charVisible && s.moving && s.mapW > 0) {
@@ -1059,6 +1052,14 @@ export default function ExploreMap({
         }
       }
 
+      // 디버그: pause 상태 화면 표시 (맨 마지막에)
+      ctx.save();
+      ctx.fillStyle = _isPaused ? "rgba(0,200,0,0.95)" : "rgba(200,0,0,0.95)";
+      ctx.fillRect(10, 10, 130, 36);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 18px monospace";
+      ctx.fillText(_isPaused ? "■ PAUSED" : "■ RUNNING", 14, 33);
+      ctx.restore();
     }
 
     rafId = requestAnimationFrame(loop);
