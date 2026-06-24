@@ -33,10 +33,10 @@ interface PostFormProps {
 
 
 function getPhotoMission(initial: Post | undefined) {
-  if (!initial) return { keywords: "", guide_text: "" };
+  if (!initial) return { keywords: "", guide_text: "", hint_image_url: "" };
   const pm = initial.post_photo_missions;
-  if (!pm || pm.length === 0) return { keywords: "", guide_text: "" };
-  return { keywords: pm[0]?.keywords ?? "", guide_text: pm[0]?.guide_text ?? "" };
+  if (!pm || pm.length === 0) return { keywords: "", guide_text: "", hint_image_url: "" };
+  return { keywords: pm[0]?.keywords ?? "", guide_text: pm[0]?.guide_text ?? "", hint_image_url: pm[0]?.hint_image_url ?? "" };
 }
 type MissionType = "quiz" | "puzzle" | "photo";
 
@@ -52,6 +52,8 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
   );
     const [photoKeywords,  setPhotoKeywords]  = useState(getPhotoMission(initial).keywords);
   const [photoGuideText, setPhotoGuideText] = useState(getPhotoMission(initial).guide_text);
+  const [photoHintImageUrl, setPhotoHintImageUrl] = useState(getPhotoMission(initial).hint_image_url);
+  const [uploadingHintImage, setUploadingHintImage] = useState(false);
   
 
   const [errors,  setErrors]  = useState<Record<string, string>>({});
@@ -122,14 +124,14 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
         await fetch("/api/photo-missions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ post_id: saved.id, keywords: photoKeywords, guide_text: photoGuideText }),
+          body: JSON.stringify({ post_id: saved.id, keywords: photoKeywords, guide_text: photoGuideText, hint_image_url: photoHintImageUrl }),
         });
       }
       const fullSaved = {
         ...saved,
         quizzes,
         post_photo_missions: missionType === "photo"
-          ? [{ keywords: photoKeywords, guide_text: photoGuideText }]
+          ? [{ keywords: photoKeywords, guide_text: photoGuideText, hint_image_url: photoHintImageUrl }]
           : (saved.post_photo_missions ?? []),
       };
       setSavedPost(fullSaved);
@@ -430,6 +432,46 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                     px-3 py-2.5 text-xs text-[#e8e4d9] placeholder:text-[#3a3830]
                     focus:outline-none focus:border-[#b89a5a] transition-colors"/>
               </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-[#c4bfb4]">
+                  확인 이미지
+                  <span className="ml-1 text-[#5a5650]">(기준 이미지와 30% 이상 유사하면 통과)</span>
+                </label>
+                {photoHintImageUrl && (
+                  <div className="relative w-full h-32 rounded-xl overflow-hidden border border-[#2a2924]">
+                    <img src={photoHintImageUrl} alt="확인이미지" className="w-full h-full object-cover"/>
+                    <button type="button"
+                      onClick={() => setPhotoHintImageUrl("")}
+                      className="absolute top-1 right-1 bg-black/60 rounded-full px-2 py-0.5 text-xs text-white">
+                      ✕ 삭제
+                    </button>
+                  </div>
+                )}
+                <label className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-[#2a2924] bg-[#0f0f10] px-3 py-3 text-xs text-[#5a5650] cursor-pointer hover:border-[#b89a5a]/50 transition-colors">
+                  {uploadingHintImage ? "업로드 중..." : "🖼️ 이미지 업로드"}
+                  <input type="file" accept="image/*" className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !gameId) return;
+                      setUploadingHintImage(true);
+                      try {
+                        const ext = file.name.split(".").pop();
+                        const path = `hint_${currentPost?.id ?? "new"}_${Date.now()}.${ext}`;
+                        const { error: upErr } = await supabase.storage.from("maps").upload(path, file, { upsert: true });
+                        if (upErr) throw upErr;
+                        const { data: urlData } = supabase.storage.from("maps").getPublicUrl(path);
+                        setPhotoHintImageUrl(urlData.publicUrl);
+                      } catch (err) {
+                        alert("이미지 업로드 실패: " + (err instanceof Error ? err.message : "오류"));
+                      } finally {
+                        setUploadingHintImage(false);
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
               <button type="button" disabled={saving}
                 onClick={async () => {
                   if (!currentPost?.id) return;
@@ -438,12 +480,12 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                     const res = await fetch("/api/photo-missions", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ post_id: currentPost.id, keywords: photoKeywords, guide_text: photoGuideText }),
+                      body: JSON.stringify({ post_id: currentPost.id, keywords: photoKeywords, guide_text: photoGuideText, hint_image_url: photoHintImageUrl }),
                     });
                     const json = await res.json();
                     if (json.error) { alert("저장 실패: " + json.error.message); }
                     else {
-                      const updatedMission = [{ keywords: photoKeywords, guide_text: photoGuideText }];
+                      const updatedMission = [{ keywords: photoKeywords, guide_text: photoGuideText, hint_image_url: photoHintImageUrl }];
                       setSavedPost(prev => {
                         if (!prev) return prev;
                         const updated = { ...prev, post_photo_missions: updatedMission };

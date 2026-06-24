@@ -32,7 +32,7 @@ export interface Post {
   created_at: string;
   updated_at: string;
   quizzes?: Quiz[];
-  post_photo_missions?: { id?: string; keywords: string; guide_text: string }[];
+  post_photo_missions?: { id?: string; keywords: string; guide_text: string; hint_image_url?: string }[];
 }
 
 export interface CreatePostInput {

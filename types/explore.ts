@@ -16,7 +16,7 @@ export const SIGNAL_LABEL: Record<SignalLevel, string> = {
 
 export interface PostWithQuiz extends Post {
   quizzes:      Quiz[];
-  post_photo_missions?: { keywords: string; guide_text: string }[];
+  post_photo_missions?: { keywords: string; guide_text: string; hint_image_url?: string }[];
   post_puzzles: PostPuzzle[];   // ← 추가
 }
 
