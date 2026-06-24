@@ -169,8 +169,7 @@ export default function ExploreMap({
   pauseObstacleRef.current = pauseObstacle; // 렌더마다 즉시 동기화
   // pauseObstacleRef를 외부로 노출해서 play/page.tsx에서 직접 제어
   useEffect(() => { getPauseRef?.(pauseObstacleRef); }, []); // eslint-disable-line
-  // stateRef도 렌더마다 즉시 동기화 (모바일 RAF 루프 즉시 반영)
-  if (stateRef && stateRef.current) stateRef.current.pauseBubble = pauseObstacle;
+
   
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; angle:number; frame:number; }>>([]); 
