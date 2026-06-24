@@ -64,6 +64,8 @@ export default function PlayPage() {
   const [signalLevel, setSignalLevel]   = useState<SignalLevel>(0);
   const [activePost, setActivePost]     = useState<PostWithQuiz | null>(null);
   const [quizState, setQuizState]       = useState<ActiveQuizState | null>(null);
+  const [quizIndex, setQuizIndex]       = useState(0); // 현재 퀴즈 인덱스
+  const [totalQuizScore, setTotalQuizScore] = useState(0); // 누적 퀴즈 점수
 
   const [resultOverlay, setResultOverlay]   = useState<ResultType>(null);
   const [confettiActive, setConfettiActive] = useState(false);
@@ -277,6 +279,8 @@ export default function PlayPage() {
 
     // 퀴즈 미션 (기본)
     if (post.quizzes.length === 0) { handlePostComplete(post, 0); return; }
+    setQuizIndex(0);
+    setTotalQuizScore(0);
     setQuizState({
       quiz:       post.quizzes[0],
       postId:     post.id,
@@ -306,7 +310,31 @@ export default function PlayPage() {
 
     if (isCorrect) {
       if (soundEnabled) playCorrectSound();
+      const nextIndex = quizIndex + 1;
+      const accumulated = totalQuizScore + score;
+
+      // 다음 퀴즈가 있으면 계속 진행
+      if (nextIndex < post.quizzes.length) {
+        setQuizIndex(nextIndex);
+        setTotalQuizScore(accumulated);
+        setQuizState({
+          quiz:       post.quizzes[nextIndex],
+          postId:     post.id,
+          attempts:   0,
+          hintsUsed:  0,
+          timeLeft:   post.time_limit_sec ?? null,
+          status:     "answering",
+          userAnswer: "",
+        });
+        // 다음 퀴즈 진행 중 표시
+        setResultOverlay("correct");
+        setTimeout(() => setResultOverlay(null as unknown as "correct"), 1200);
+        return;
+      }
+
+      // 모든 퀴즈 완료
       setActivePost(null); setQuizState(null);
+      setQuizIndex(0); setTotalQuizScore(0);
       setPhase("exploring");
 
       const g = gameRef.current;
@@ -319,16 +347,16 @@ export default function PlayPage() {
       const py = Number(post.coord_y) ?? 50;
       setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
 
-      // 마지막 포스트면 1.5초 후 완료, 아니면 5600ms 후
       const delay = isLast ? 1500 : 5600;
       setTimeout(() => {
         setConfettiActive(false);
         setKeyFly((k) => ({ ...k, active: false }));
-        handlePostComplete(post, score);
+        handlePostComplete(post, accumulated);
       }, delay);
     } else {
       if (soundEnabled) playWrongSound();
       setActivePost(null); setQuizState(null);
+      setQuizIndex(0); setTotalQuizScore(0);
       setPhase("exploring");
       setResultOverlay("wrong");
     }
@@ -561,6 +589,7 @@ export default function PlayPage() {
       {phase === "mission" && activePost && quizState && (
         <MissionPopup
           post={activePost} quizState={quizState} seniorMode={seniorMode}
+            quizIndex={quizIndex} totalQuizzes={activePost?.quizzes?.length ?? 1}
           sessionId={session?.id ?? null}
           gameId={game?.id ?? null}
           onAnswer={handleAnswer}
