@@ -8,19 +8,22 @@ import type { PostWithQuiz, ActiveQuizState } from "@/types/explore";
 import { QUIZ_TYPE_LABEL } from "@/types/post";
 
 interface MissionPopupProps {
-  post:       PostWithQuiz;
-  quizState:  ActiveQuizState;
-  sessionId:  string | null;   // ← 추가: 클릭 추적용
-  gameId:     string | null;   // ← 추가: 클릭 추적용
-  seniorMode: boolean;
-  onAnswer:   (answer: string) => void;
-  onUseHint:  () => void;
-  onClose:    () => void;
-  onSkip:     () => void;
+  post:        PostWithQuiz;
+  quizState:   ActiveQuizState;
+  sessionId:   string | null;
+  gameId:      string | null;
+  seniorMode:  boolean;
+  quizIndex?:  number;
+  totalQuizzes?: number;
+  onAnswer:    (answer: string) => void;
+  onUseHint:   () => void;
+  onClose:     () => void;
+  onSkip:      () => void;
 }
 
 export default function MissionPopup({
   post, quizState, sessionId, gameId, seniorMode,
+  quizIndex = 0, totalQuizzes = 1,
   onAnswer, onUseHint, onClose, onSkip,
 }: MissionPopupProps) {
   const { quiz, status } = quizState;
