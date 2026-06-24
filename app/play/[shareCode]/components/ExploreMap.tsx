@@ -430,9 +430,11 @@ export default function ExploreMap({
       }
       // 디버그: pause 상태 화면 표시
       ctx.save();
-      ctx.fillStyle = _isPaused ? "rgba(0,255,0,0.8)" : "rgba(255,0,0,0.8)";
-      ctx.font = "bold 16px sans-serif";
-      ctx.fillText(_isPaused ? "PAUSED" : "RUNNING", 10, 30);
+      ctx.fillStyle = _isPaused ? "rgba(0,255,0,0.9)" : "rgba(255,0,0,0.9)";
+      ctx.fillRect(10, 10, 120, 35);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 18px sans-serif";
+      ctx.fillText(_isPaused ? "PAUSED" : "RUNNING", 15, 33);
       ctx.restore();
 
       // 자동 패닝
