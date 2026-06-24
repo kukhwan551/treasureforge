@@ -328,9 +328,6 @@ export default function PlayPage() {
 
   // 퍼즐 완료
   function handlePuzzleComplete() {
-    setPhase("exploring"); // phase 먼저 변경 후 pauseBubble 해제 (타이밍 문제 방지)
-    setTimeout(() => { pauseBubbleRef.current = false; }, 50);
-    // 퍼즐 완료 후 충돌 상태 초기화 (잠시 후)
     if (!activePost) return;
     const post = activePost;
     if (soundEnabled) playCorrectSound();
@@ -351,6 +348,8 @@ export default function PlayPage() {
     setTimeout(() => {
       setConfettiActive(false);
       setKeyFly((k) => ({ ...k, active: false }));
+      // 축하 애니메이션 완료 후 장애물 재개 (충돌 방지)
+      pauseBubbleRef.current = false;
       handlePostComplete(post, 0);
     }, delay);
   }
