@@ -424,9 +424,16 @@ export default function ExploreMap({
       const s = stateRef.current;
 
       // 장애물 즉시 화면 밖으로 (모바일 즉시 반영)
-      if (isObstaclePausedGlobal() && bubblesRef.current.length > 0) {
+      const _isPaused = isObstaclePausedGlobal();
+      if (_isPaused && bubblesRef.current.length > 0) {
         for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
       }
+      // 디버그: pause 상태 화면 표시
+      ctx.save();
+      ctx.fillStyle = _isPaused ? "rgba(0,255,0,0.8)" : "rgba(255,0,0,0.8)";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(_isPaused ? "PAUSED" : "RUNNING", 10, 30);
+      ctx.restore();
 
       // 자동 패닝
       if (s.charVisible && s.moving && s.mapW > 0) {
