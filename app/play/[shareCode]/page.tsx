@@ -89,6 +89,7 @@ export default function PlayPage() {
   const completedIdsRef = useRef<Set<string>>(new Set());
   const phaseRef        = useRef<GamePhase>("loading");
   const pauseBubbleRef  = useRef(false);
+  const exploremapStateRef = useRef<React.MutableRefObject<{pauseBubble:boolean;[key:string]:unknown}> | null>(null);
   const soundEnabledRef = useRef(true);
   const lastSignalRef   = useRef<SignalLevel>(0);
   const beepTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,6 +101,9 @@ export default function PlayPage() {
   useEffect(() => {
     phaseRef.current = phase;
     pauseBubbleRef.current = phase !== "exploring";
+    if (exploremapStateRef.current) {
+      exploremapStateRef.current.current.pauseBubble = phase !== "exploring";
+    }
   }, [phase]);
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
@@ -524,10 +528,6 @@ export default function PlayPage() {
       )}
 
       <div className="fixed left-0 right-0" style={{ top: session ? HUD_HEIGHT : 0, bottom: 0, zIndex: 10 }}>
-        {/* 퍼즐/퀴즈/미션 중 터치 이벤트 차단 오버레이 (모바일 장애물 오작동 방지) */}
-        {phase !== "exploring" && (
-          <div className="absolute inset-0 z-20" style={{ touchAction: "none", pointerEvents: "all" }} />
-        )}
         {game.map_url && (
           <ExploreMap
             mapUrl={game.map_url}
@@ -542,6 +542,7 @@ export default function PlayPage() {
             obstacleType={game.obstacle_type ?? "none"}
             obstacleLevel={game.obstacle_level ?? "easy"}
             pauseObstacle={phase !== "exploring"}
+            getStateRef={(ref) => { exploremapStateRef.current = ref; }}
             onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}

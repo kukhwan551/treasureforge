@@ -231,6 +231,8 @@ export default function ExploreMap({
   });
 
   // prop 동기화
+  // getStateRef로 stateRef를 외부에 노출 (play/page.tsx에서 직접 pauseBubble 제어)
+  useEffect(() => { getStateRef?.(stateRef); }, []); // eslint-disable-line
   useEffect(() => { stateRef.current.sl = signalLevel; }, [signalLevel]);
   useEffect(() => { stateRef.current.sm = seniorMode; }, [seniorMode]);
   useEffect(() => { stateRef.current.charId = characterId; }, [characterId]);
