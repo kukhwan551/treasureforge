@@ -328,7 +328,8 @@ export default function PlayPage() {
 
   // 퍼즐 완료
   function handlePuzzleComplete() {
-    pauseBubbleRef.current = false;
+    setPhase("exploring"); // phase 먼저 변경 후 pauseBubble 해제 (타이밍 문제 방지)
+    setTimeout(() => { pauseBubbleRef.current = false; }, 50);
     // 퍼즐 완료 후 충돌 상태 초기화 (잠시 후)
     if (!activePost) return;
     const post = activePost;
@@ -355,7 +356,8 @@ export default function PlayPage() {
   }
 
   function handlePuzzleSkip() {
-    pauseBubbleRef.current = false;
+    setPhase("exploring");
+    setTimeout(() => { pauseBubbleRef.current = false; }, 50);
     setActivePost(null);
     setPhase("exploring");
   }
@@ -560,26 +562,7 @@ export default function PlayPage() {
         <PhotoMissionPopup
           post={activePost}
           seniorMode={seniorMode}
-          onComplete={() => {
-            pauseBubbleRef.current = false;
-            setActivePost(null);
-            setPhase("exploring");
-            if (soundEnabled) playCorrectSound();
-            setConfettiActive(true);
-            setResultOverlay("correct");
-            const px = Number(activePost.coord_x) ?? 50;
-            const py = Number(activePost.coord_y) ?? 50;
-            setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
-            const g = gameRef.current;
-            const completed = completedIdsRef.current;
-            const isLast = g ? (completed.size + 1 >= g.posts.length) : false;
-            const delay = isLast ? 1500 : 5600;
-            setTimeout(() => {
-              setConfettiActive(false);
-              setKeyFly((k) => ({ ...k, active: false }));
-              handlePostComplete(activePost, 0);
-            }, delay);
-          }}
+          onComplete={() => { pauseBubbleRef.current = false; handlePostComplete(activePost, 0); }}
           onSkip={() => { pauseBubbleRef.current = false; setActivePost(null); setPhase("exploring"); }}
         />
       )}

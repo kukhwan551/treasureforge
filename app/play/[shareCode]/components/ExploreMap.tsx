@@ -165,6 +165,7 @@ export default function ExploreMap({
   
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; angle:number; frame:number; }>>([]); 
+  const obstacleSpeedRef = useRef(0.5); // 원래 속도 저장
   const obstacleHitRef = useRef(false);
   useEffect(() => {
     pauseObstacleRef.current = pauseObstacle;
@@ -186,8 +187,9 @@ export default function ExploreMap({
         b.x = Math.max(20, Math.min(cW - 20, x));
         b.y = Math.max(20, Math.min(cH - 20, y));
         const angle = Math.random() * Math.PI * 2;
-        b.vx = Math.cos(angle) * Math.abs(b.vx || 0.5);
-        b.vy = Math.sin(angle) * Math.abs(b.vy || 0.5);
+        const spd = obstacleSpeedRef.current * (0.7 + Math.random() * 0.6);
+        b.vx = Math.cos(angle) * spd;
+        b.vy = Math.sin(angle) * spd;
         b.frame = Math.floor(Math.random() * 60);
       });
     }
@@ -364,6 +366,7 @@ export default function ExploreMap({
       hard:   { count: 10, speed: 1.05, minR: 12, maxR: 22 },
     };
     const cfg = cfgMap[obstacleLevel] ?? cfgMap.easy;
+    obstacleSpeedRef.current = cfg.speed; // 원래 속도 저장
     const cW = canvasRef.current?.width  ?? 400;
     const cH = canvasRef.current?.height ?? 700;
     // 화면을 격자로 나눠 각 구역 중앙에서 시작 (사방 균등 분산)
