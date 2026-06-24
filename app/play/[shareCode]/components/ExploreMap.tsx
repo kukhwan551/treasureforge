@@ -460,10 +460,11 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 장애물 ──
-        if (obstacleType !== "none" && s.pauseBubble) {
+        const isObstaclePaused = pauseObstacleRef.current;
+        if (obstacleType !== "none" && isObstaclePaused) {
           for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
         }
-        if (obstacleType !== "none" && !s.pauseBubble && bubblesRef.current.length > 0) {
+        if (obstacleType !== "none" && !isObstaclePaused && bubblesRef.current.length > 0) {
           for (const b of bubblesRef.current) {
             b.x += b.vx; b.y += b.vy; b.frame++;
             b.angle = Math.atan2(b.vy, b.vx);
