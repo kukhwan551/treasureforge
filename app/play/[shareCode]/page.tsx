@@ -358,9 +358,9 @@ export default function PlayPage() {
     setTimeout(() => {
       setConfettiActive(false);
       setKeyFly((k) => ({ ...k, active: false }));
-      // 축하 애니메이션 완료 후 장애물 재개
-      setObstaclePaused(false);
       pauseBubbleRef.current = false;
+      // 장애물 재개는 터치/마우스 이동 시 자연스럽게 처리됨
+      setObstaclePaused(false);
       handlePostComplete(post, 0);
     }, delay);
   }

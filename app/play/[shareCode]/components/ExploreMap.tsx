@@ -1108,6 +1108,8 @@ export default function ExploreMap({
     let stopT: ReturnType<typeof setTimeout> | null = null;
     function onMove(e: MouseEvent) {
       processPos(e.clientX, e.clientY);
+      // 마우스 이동 시 장애물 재개 (퍼즐 완료 후 자연스럽게 재개)
+      if (isObstaclePausedGlobal()) setObstaclePaused(false);
       if (stopT) clearTimeout(stopT);
       stopT = setTimeout(() => { stateRef.current.moving = false; }, 150);
     }
@@ -1142,6 +1144,8 @@ export default function ExploreMap({
       if (Math.abs(t.clientX-s.tapStartX)>10 || Math.abs(t.clientY-s.tapStartY)>10)
         s.isTap = false;
       processPos(t.clientX, t.clientY);
+      // 터치 이동 시 장애물 재개 (퍼즐 완료 후 자연스럽게 재개)
+      if (isObstaclePausedGlobal()) setObstaclePaused(false);
       if (stopT) clearTimeout(stopT);
       stopT = setTimeout(() => { s.moving = false; }, 200);
     }
