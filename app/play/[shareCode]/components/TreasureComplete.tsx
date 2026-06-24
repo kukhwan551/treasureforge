@@ -196,24 +196,26 @@ export default function TreasureComplete({
     }
 
     function animate() {
+      const ctx2 = canvasRef.current?.getContext("2d");
+      if (!ctx2) return;
       frameRef.current++;
       const f = frameRef.current;
       const currentPhase = phaseRef.current;
 
-      ctx.clearRect(0, 0, W, H);
+      ctx2.clearRect(0, 0, W, H);
 
       if (currentPhase === "key") {
         const progress = Math.min(f / 60, 1);
-        drawChest(ctx, 0);
-        drawKey(ctx, progress, false, f);
+        drawChest(ctx2, 0);
+        drawKey(ctx2, progress, false, f);
       } else if (currentPhase === "insert") {
         const progress = Math.min(f / 50, 1);
-        drawChest(ctx, 0);
-        drawKey(ctx, progress, true, f);
+        drawChest(ctx2, 0);
+        drawKey(ctx2, progress, true, f);
       } else if (currentPhase === "open") {
         const progress = Math.min(f / 60, 1);
-        drawChest(ctx, progress);
-        drawKeyInLock(ctx);
+        drawChest(ctx2, progress);
+        drawKeyInLock(ctx2);
       } else {
         cancelAnimationFrame(rafRef.current);
         return;
