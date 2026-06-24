@@ -6,7 +6,7 @@ type RouteContext = { params: Promise<{ shareCode: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   const { shareCode } = await params;
-  const supabase = createAdminClient(); // ← Admin 클라이언트 (RLS 우회, 비로그인도 OK)
+  const supabase = createAdminClient();
 
   const { data: game, error: gameErr } = await supabase
     .from("games")
@@ -54,7 +54,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
         time_limit_sec, hint_enabled
       ),
       post_photo_missions (
-        id, keywords, guide_text
+        id, keywords, guide_text, hint_image_url
       )
     `)
     .eq("game_id", game.id)
