@@ -25,6 +25,7 @@ export default function PhotoMissionPopup({
 
   const guideText = pm?.guide_text || "이 장소에서 사진을 찍어 인증해주세요.";
   const keywords  = pm?.keywords   || "";
+  const hintImageUrl = pm?.hint_image_url || "";
   const ts = seniorMode ? "text-xl" : "text-base";
   const th = seniorMode ? "text-2xl" : "text-lg";
 
