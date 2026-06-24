@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { post_id, keywords, guide_text } = body;
+  const { post_id, keywords, guide_text, hint_image_url } = body;
   if (!post_id) return NextResponse.json({ error: { message: "post_id 필요" } }, { status: 400 });
 
   const supabase = createAdminClient();
@@ -19,18 +19,16 @@ export async function POST(req: NextRequest) {
   let data, error;
 
   if (existing?.id) {
-    // 기존 row가 있으면 UPDATE
     ({ data, error } = await supabase
       .from("post_photo_missions")
-      .update({ keywords: keywords ?? "", guide_text: guide_text ?? "" })
+      .update({ keywords: keywords ?? "", guide_text: guide_text ?? "", hint_image_url: hint_image_url ?? null })
       .eq("id", existing.id)
       .select()
       .single());
   } else {
-    // 없으면 INSERT
     ({ data, error } = await supabase
       .from("post_photo_missions")
-      .insert({ post_id, keywords: keywords ?? "", guide_text: guide_text ?? "" })
+      .insert({ post_id, keywords: keywords ?? "", guide_text: guide_text ?? "", hint_image_url: hint_image_url ?? null })
       .select()
       .single());
   }
