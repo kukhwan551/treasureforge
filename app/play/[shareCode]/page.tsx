@@ -64,8 +64,8 @@ export default function PlayPage() {
   const [signalLevel, setSignalLevel]   = useState<SignalLevel>(0);
   const [activePost, setActivePost]     = useState<PostWithQuiz | null>(null);
   const [quizState, setQuizState]       = useState<ActiveQuizState | null>(null);
-  const [quizIndex, setQuizIndex]       = useState(0); // 현재 퀴즈 인덱스
-  const [totalQuizScore, setTotalQuizScore] = useState(0); // 누적 퀴즈 점수
+  const [quizIndex, setQuizIndex]       = useState(0);
+  const [totalQuizScore, setTotalQuizScore] = useState(0);
 
   const [resultOverlay, setResultOverlay]   = useState<ResultType>(null);
   const [confettiActive, setConfettiActive] = useState(false);
@@ -317,18 +317,19 @@ export default function PlayPage() {
       if (nextIndex < post.quizzes.length) {
         setQuizIndex(nextIndex);
         setTotalQuizScore(accumulated);
-        setQuizState({
-          quiz:       post.quizzes[nextIndex],
-          postId:     post.id,
-          attempts:   0,
-          hintsUsed:  0,
-          timeLeft:   post.time_limit_sec ?? null,
-          status:     "answering",
-          userAnswer: "",
-        });
-        // 다음 퀴즈 진행 중 표시
-        setResultOverlay("correct");
-        setTimeout(() => setResultOverlay(null as unknown as "correct"), 1200);
+        setResultOverlay("correct_intermediate");
+        setTimeout(() => {
+          setResultOverlay(null);
+          setQuizState({
+            quiz:       post.quizzes[nextIndex],
+            postId:     post.id,
+            attempts:   0,
+            hintsUsed:  0,
+            timeLeft:   post.time_limit_sec ?? null,
+            status:     "answering",
+            userAnswer: "",
+          });
+        }, 1200);
         return;
       }
 

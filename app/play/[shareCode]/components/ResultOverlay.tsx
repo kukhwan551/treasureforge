@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 
 // ← "timeout" 추가
-export type ResultType = "correct" | "wrong" | "timeout" | null;
+export type ResultType = "correct" | "correct_intermediate" | "wrong" | "timeout" | null;
 
 interface ResultOverlayProps {
   result: ResultType;
@@ -108,7 +108,23 @@ export default function ResultOverlay({
           </div>
         )}
 
-        {/* 오답 */}
+
+        {/* 중간 정답 - 다음 퀴즈 있음 */}
+        {result === "correct_intermediate" && (
+          <div className={`text-center space-y-2 px-8 py-6
+            rounded-3xl border border-[#4a9d6f]/40
+            bg-[#0a1a10]/90 backdrop-blur-sm shadow-2xl
+            ${visible ? "animate-[pop-in_0.4s_ease-out]" : ""}`}>
+            <div className={sm ? "text-8xl" : "text-6xl"}>⭕</div>
+            <p className={`font-black text-[#4a9d6f] ${sm ? "text-4xl" : "text-3xl"}`}>
+              정답입니다!
+            </p>
+            <p className={`text-[#6abd8f] ${sm ? "text-xl" : "text-base"}`}>
+              다음 퀴즈로 이동합니다 →
+            </p>
+          </div>
+        )}
+        {/* 오답 */
         {result === "wrong" && (
           <div className={`text-center space-y-2 px-8 py-6
             rounded-3xl border border-[#c0504a]/40
