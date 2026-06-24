@@ -1052,14 +1052,7 @@ export default function ExploreMap({
         }
       }
 
-      // 디버그: pause 상태 화면 표시 (맨 마지막에)
-      ctx.save();
-      ctx.fillStyle = _isPaused ? "rgba(0,200,0,0.95)" : "rgba(200,0,0,0.95)";
-      ctx.fillRect(10, 10, 130, 36);
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 18px monospace";
-      ctx.fillText(_isPaused ? "■ PAUSED" : "■ RUNNING", 14, 33);
-      ctx.restore();
+
     }
 
     rafId = requestAnimationFrame(loop);
