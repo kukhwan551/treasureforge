@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import GameIntro        from "./components/GameIntro";
-import ExploreMap, { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP, ZOOM_DEFAULT } from "./components/ExploreMap";
+import ExploreMap, { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP, ZOOM_DEFAULT, setObstaclePaused } from "./components/ExploreMap";
 import { CHARACTERS, type CharacterId } from "@/types/character";
 import HUD, { HUD_HEIGHT } from "./components/HUD";
 import MissionPopup     from "./components/MissionPopup";
@@ -101,7 +101,8 @@ export default function PlayPage() {
   useEffect(() => {
     phaseRef.current = phase;
     pauseBubbleRef.current = phase !== "exploring";
-    // ExploreMap 내부 pauseObstacleRef 직접 제어 (모바일 즉시 반영)
+    // 모듈 레벨 함수로 즉시 반영 (React 렌더링 사이클 완전 우회)
+    setObstaclePaused(phase !== "exploring");
     if (exploremapPauseRef.current) {
       exploremapPauseRef.current.current = phase !== "exploring";
     }
@@ -262,6 +263,7 @@ export default function PlayPage() {
       const puzzle = post.post_puzzles?.[0];
       if (!puzzle) { handlePostComplete(post, 0); return; }
       pauseBubbleRef.current = true;
+      setObstaclePaused(true);
       setPhase("puzzle");
       return;
     }

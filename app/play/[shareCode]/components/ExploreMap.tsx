@@ -1,6 +1,9 @@
 "use client";
 
 // app/play/[shareCode]/components/ExploreMap.tsx
+// 모듈 레벨 pause 플래그 - React 렌더링 사이클 완전 우회
+let _globalObstaclePaused = false;
+export function setObstaclePaused(v: boolean) { _globalObstaclePaused = v; }
 // 자동 패닝 방식 (안정화 버전)
 
 import { useRef, useEffect } from "react";
@@ -468,7 +471,7 @@ export default function ExploreMap({
           s.sm ? 56 : 44, s.walkStep, s.flipped, s.sl, s.charId);
 
         // ── 장애물 ──
-        const isObstaclePaused = pauseObstacleRef.current;
+        const isObstaclePaused = _globalObstaclePaused || pauseObstacleRef.current;
         if (obstacleType !== "none" && isObstaclePaused) {
           for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
         }
@@ -668,7 +671,7 @@ export default function ExploreMap({
             ctx.restore();
 
             // ── 충돌 감지 (공통) ──
-            if (!obstacleHitRef.current && !pauseObstacleRef.current) {
+            if (!obstacleHitRef.current && !pauseObstacleRef.current && !_globalObstaclePaused) {
               const charR = s.sm ? 18 : 14;
               const dx = s.charX - b.x;
               const dy = (s.charY - (s.sm ? 20 : 16)) - b.y;
