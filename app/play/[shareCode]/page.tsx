@@ -335,11 +335,11 @@ export default function PlayPage() {
 
   // 퍼즐 완료
   function handlePuzzleComplete() {
-    setPhase("exploring"); // phase 먼저 변경 후 pauseBubble 해제 (타이밍 문제 방지)
-    setTimeout(() => { pauseBubbleRef.current = false; }, 50);
-    // 퍼즐 완료 후 충돌 상태 초기화 (잠시 후)
     if (!activePost) return;
     const post = activePost;
+    // 즉시 pause 유지 (축하 애니메이션 동안)
+    setObstaclePaused(true);
+    pauseBubbleRef.current = true;
     if (soundEnabled) playCorrectSound();
     setActivePost(null);
     setPhase("exploring");
@@ -358,13 +358,16 @@ export default function PlayPage() {
     setTimeout(() => {
       setConfettiActive(false);
       setKeyFly((k) => ({ ...k, active: false }));
+      // 축하 애니메이션 완료 후 장애물 재개
+      setObstaclePaused(false);
+      pauseBubbleRef.current = false;
       handlePostComplete(post, 0);
     }, delay);
   }
 
   function handlePuzzleSkip() {
-    setPhase("exploring");
-    setTimeout(() => { pauseBubbleRef.current = false; }, 50);
+    setObstaclePaused(false);
+    pauseBubbleRef.current = false;
     setActivePost(null);
     setPhase("exploring");
   }
