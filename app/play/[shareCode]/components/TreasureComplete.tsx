@@ -200,7 +200,7 @@ export default function TreasureComplete({
         drawChest(0);
         drawKey(progress, true);
         // 꽂을 때 진동
-        if (progress > 0.8) {
+        if (progress > 0.8 && ctx) {
           const shake = Math.sin(f * 0.8) * 3 * (1 - progress);
           ctx.save();
           ctx.translate(shake, 0);
