@@ -419,6 +419,11 @@ export default function ExploreMap({
 
       const s = stateRef.current;
 
+      // 장애물 즉시 화면 밖으로 (모바일 즉시 반영)
+      if (_globalObstaclePaused && bubblesRef.current.length > 0) {
+        for (const b of bubblesRef.current) { b.x = -999; b.y = -999; }
+      }
+
       // 자동 패닝
       if (s.charVisible && s.moving && s.mapW > 0) {
         const edX = cW * EDGE_RATIO;
