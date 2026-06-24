@@ -101,10 +101,11 @@ export default function PlayPage() {
   useEffect(() => {
     phaseRef.current = phase;
     pauseBubbleRef.current = phase !== "exploring";
-    // 모듈 레벨 함수로 즉시 반영 (React 렌더링 사이클 완전 우회)
-    setObstaclePaused(phase !== "exploring");
-    if (exploremapPauseRef.current) {
-      exploremapPauseRef.current.current = phase !== "exploring";
+    // 참고: setObstaclePaused는 여기서 호출하지 않음
+    // phase가 exploring으로 바뀔 때 false로 덮어씌우는 문제 방지
+    // setObstaclePaused는 퍼즐/퀴즈 시작 시와 터치 이동 시에만 호출
+    if (phase !== "exploring") {
+      setObstaclePaused(true);
     }
   }, [phase]);
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
