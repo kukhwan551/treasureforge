@@ -21,6 +21,7 @@ interface ExploreMapProps {
   obstacleLevel?: string;
   pauseObstacle?: boolean;
   getStateRef?: (ref: React.MutableRefObject<{pauseBubble:boolean;[key:string]:unknown}>) => void;
+  getPauseRef?: (ref: React.MutableRefObject<boolean>) => void;
   onObstacleHit?: () => void;
   onCursorMove: (x: number, y: number) => void;
   onPostClick:  (post: PostWithQuiz) => void;
@@ -152,6 +153,7 @@ export default function ExploreMap({
   obstacleType = "none",
   obstacleLevel = "easy",
   pauseObstacle = false,
+  getPauseRef,
   getStateRef,
   onObstacleHit,
   onCursorMove, onPostClick,
@@ -162,6 +164,10 @@ export default function ExploreMap({
   // 모든 상태를 하나의 ref 객체로 관리
   const pauseObstacleRef = useRef(pauseObstacle);
   pauseObstacleRef.current = pauseObstacle; // 렌더마다 즉시 동기화
+  // pauseObstacleRef를 외부로 노출해서 play/page.tsx에서 직접 제어
+  useEffect(() => { getPauseRef?.(pauseObstacleRef); }, []); // eslint-disable-line
+  // stateRef도 렌더마다 즉시 동기화 (모바일 RAF 루프 즉시 반영)
+  if (stateRef && stateRef.current) stateRef.current.pauseBubble = pauseObstacle;
   
   // phaseRef를 stateRef에 저장해서 RAF에서 직접 참조
   const bubblesRef = useRef<Array<{ x:number; y:number; r:number; vx:number; vy:number; angle:number; frame:number; }>>([]); 

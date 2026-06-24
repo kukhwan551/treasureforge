@@ -89,7 +89,7 @@ export default function PlayPage() {
   const completedIdsRef = useRef<Set<string>>(new Set());
   const phaseRef        = useRef<GamePhase>("loading");
   const pauseBubbleRef  = useRef(false);
-  const exploremapStateRef = useRef<React.MutableRefObject<{pauseBubble:boolean;[key:string]:unknown}> | null>(null);
+  const exploremapPauseRef = useRef<React.MutableRefObject<boolean> | null>(null);
   const soundEnabledRef = useRef(true);
   const lastSignalRef   = useRef<SignalLevel>(0);
   const beepTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,8 +101,9 @@ export default function PlayPage() {
   useEffect(() => {
     phaseRef.current = phase;
     pauseBubbleRef.current = phase !== "exploring";
-    if (exploremapStateRef.current) {
-      exploremapStateRef.current.current.pauseBubble = phase !== "exploring";
+    // ExploreMap 내부 pauseObstacleRef 직접 제어 (모바일 즉시 반영)
+    if (exploremapPauseRef.current) {
+      exploremapPauseRef.current.current = phase !== "exploring";
     }
   }, [phase]);
   useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
@@ -542,7 +543,7 @@ export default function PlayPage() {
             obstacleType={game.obstacle_type ?? "none"}
             obstacleLevel={game.obstacle_level ?? "easy"}
             pauseObstacle={phase !== "exploring"}
-            getStateRef={(ref) => { exploremapStateRef.current = ref; }}
+            getPauseRef={(ref) => { exploremapPauseRef.current = ref; }}
             onObstacleHit={handleObstacleHit}
             onCursorMove={handleCursorMove}
             onPostClick={handlePostClick}
