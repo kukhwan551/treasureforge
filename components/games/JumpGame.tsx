@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 interface Props { seniorMode: boolean; onComplete: (score: number) => void; onSkip: () => void; }
 
 const PASS_SCORE = 5;
-const GRAVITY = seniorMode => seniorMode ? 0.4 : 0.55;
-const JUMP = seniorMode => seniorMode ? -9 : -11;
-const PIPE_SPEED = seniorMode => seniorMode ? 2.5 : 3.5;
-const GAP = seniorMode => seniorMode ? 160 : 140;
+const GRAVITY = (seniorMode: boolean) => seniorMode ? 0.4 : 0.55;
+const JUMP = (seniorMode: boolean) => seniorMode ? -9 : -11;
+const PIPE_SPEED = (seniorMode: boolean) => seniorMode ? 2.5 : 3.5;
+const GAP = (seniorMode: boolean) => seniorMode ? 160 : 140;
 
 export default function JumpGame({ seniorMode, onComplete, onSkip }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
