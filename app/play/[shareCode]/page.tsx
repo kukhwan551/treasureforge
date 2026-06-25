@@ -12,6 +12,7 @@ import HUD, { HUD_HEIGHT } from "./components/HUD";
 import MissionPopup     from "./components/MissionPopup";
 import PuzzlePopup       from "@/components/puzzle/PuzzlePopup";
 import PhotoMissionPopup from "@/components/photo/PhotoMissionPopup";
+import GamePopup, { GameType } from "@/components/games/GamePopup";
 import TreasureComplete from "./components/TreasureComplete";
 import ConfettiCanvas   from "./components/ConfettiCanvas";
 import KeyFlyAnimation  from "./components/KeyFlyAnimation";
@@ -627,6 +628,43 @@ export default function PlayPage() {
             }, delay);
           }}
           onSkip={() => { pauseBubbleRef.current = false; setActivePost(null); setPhase("exploring"); }}
+        />
+      )}
+
+      {/* ★ 게임 팝업 */}
+      {phase === "game" && activePost && (
+        <GamePopup
+          gameType={(activePost as PostWithQuiz & { post_game_type?: string }).post_game_type as GameType ?? "mole"}
+          postName={activePost.name}
+          seniorMode={seniorMode}
+          onComplete={(gameScore) => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(true);
+            setActivePost(null);
+            setPhase("exploring");
+            if (soundEnabled) playCorrectSound();
+            setConfettiActive(true);
+            setResultOverlay("correct");
+            const px = Number(activePost.coord_x) ?? 50;
+            const py = Number(activePost.coord_y) ?? 50;
+            setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
+            const g = gameRef.current;
+            const completed = completedIdsRef.current;
+            const isLast = g ? (completed.size + 1 >= g.posts.length) : false;
+            const delay = isLast ? 1500 : 5600;
+            setTimeout(() => {
+              setConfettiActive(false);
+              setKeyFly((k) => ({ ...k, active: false }));
+              setObstaclePaused(false);
+              handlePostComplete(activePost, gameScore);
+            }, delay);
+          }}
+          onSkip={() => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(false);
+            setActivePost(null);
+            setPhase("exploring");
+          }}
         />
       )}
 
