@@ -283,6 +283,34 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
               px-4 py-3 text-sm text-[#e07070]">{errors.submit}</div>
           )}
 
+          {/* ── 게임 설정 ── */}
+          {missionType === "game" && (
+            <div className="rounded-xl border border-[#2a2924] bg-[#18181a] p-4 space-y-3">
+              <p className="text-sm font-medium text-[#c4bfb4]">🎮 게임 선택</p>
+              <div className="grid grid-cols-1 gap-2">
+                {([
+                  { value: "mole",   label: "🐹 두더지 잡기",   desc: "두더지를 탭해서 잡기" },
+                  { value: "dodge",  label: "🚀 장애물 피하기", desc: "장애물을 피하며 생존" },
+                  { value: "memory", label: "🃏 기억력 게임",   desc: "카드 짝 맞추기" },
+                  { value: "typing", label: "⌨️ 타이핑 게임",  desc: "단어 빠르게 입력" },
+                  { value: "target", label: "🎯 과녁 맞추기",  desc: "움직이는 과녁 맞추기" },
+                ] as const).map(g => (
+                  <button key={g.value} type="button"
+                    onClick={() => setGameType(g.value)}
+                    className={[
+                      "w-full text-left rounded-xl border px-4 py-3 transition-all",
+                      gameType === g.value
+                        ? "border-[#b89a5a] bg-[#b89a5a]/15 text-[#d4b06a]"
+                        : "border-[#2a2924] bg-[#141414] text-[#c4bfb4] hover:border-[#b89a5a]/30"
+                    ].join(" ")}>
+                    <span className="font-medium">{g.label}</span>
+                    <span className="ml-2 text-xs text-[#5a5650]">{g.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onCancel}
               className="rounded-xl border border-[#2a2924] px-4 py-2.5 text-sm
