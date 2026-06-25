@@ -278,6 +278,14 @@ export default function PlayPage() {
       return;
     }
 
+    if (missionType === "game") {
+      pauseBubbleRef.current = true;
+      setObstaclePaused(true);
+      setActivePost(post);
+      setPhase("game");
+      return;
+    }
+
     // 퀴즈 미션 (기본)
     if (post.quizzes.length === 0) { handlePostComplete(post, 0); return; }
     setQuizIndex(0);
@@ -634,7 +642,44 @@ export default function PlayPage() {
       {/* ★ 게임 팝업 */}
       {phase === "game" && activePost && (
         <GamePopup
-          gameType={(activePost as PostWithQuiz & { post_game_type?: string }).post_game_type as GameType ?? "mole"}
+          gameType={((activePost as PostWithQuiz & { post_game_type?: string }).post_game_type ?? "mole") as GameType}
+          postName={activePost.name}
+          seniorMode={seniorMode}
+          onComplete={(gameScore) => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(true);
+            setActivePost(null);
+            setPhase("exploring");
+            if (soundEnabled) playCorrectSound();
+            setConfettiActive(true);
+            setResultOverlay("correct");
+            const px = Number(activePost.coord_x) ?? 50;
+            const py = Number(activePost.coord_y) ?? 50;
+            setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
+            const g = gameRef.current;
+            const completed = completedIdsRef.current;
+            const isLast = g ? (completed.size + 1 >= g.posts.length) : false;
+            const delay = isLast ? 1500 : 5600;
+            setTimeout(() => {
+              setConfettiActive(false);
+              setKeyFly((k) => ({ ...k, active: false }));
+              setObstaclePaused(false);
+              handlePostComplete(activePost, gameScore);
+            }, delay);
+          }}
+          onSkip={() => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(false);
+            setActivePost(null);
+            setPhase("exploring");
+          }}
+        />
+      )}
+
+      {/* ★ 게임 팝업 */}
+      {phase === "game" && activePost && (
+        <GamePopup
+          gameType={((activePost as PostWithQuiz & { post_game_type?: string }).post_game_type ?? "mole") as GameType}
           postName={activePost.name}
           seniorMode={seniorMode}
           onComplete={(gameScore) => {
