@@ -289,11 +289,11 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
               <p className="text-sm font-medium text-[#c4bfb4]">🎮 게임 선택</p>
               <div className="grid grid-cols-1 gap-2">
                 {([
-                  { value: "mole",   label: "🐹 두더지 잡기",   desc: "두더지를 탭해서 잡기" },
-                  { value: "dodge",  label: "🚀 장애물 피하기", desc: "장애물을 피하며 생존" },
+                  { value: "mole",   label: "🐹 두더지 잡기", desc: "두더지를 탭해서 잡기" },
+                  { value: "tetris", label: "🟦 테트리스",     desc: "블록 3줄 클리어" },
+                  { value: "brick",  label: "🧱 벽돌깨기",    desc: "공으로 벽돌 15개 파괴" },
                   { value: "memory", label: "🃏 기억력 게임",   desc: "카드 짝 맞추기" },
-                  { value: "typing", label: "⌨️ 타이핑 게임",  desc: "단어 빠르게 입력" },
-                  { value: "target", label: "🎯 과녁 맞추기",  desc: "움직이는 과녁 맞추기" },
+                  { value: "jump",   label: "🐦 점프 게임",   desc: "장애물 5개 통과" },
                 ] as const).map(g => (
                   <button key={g.value} type="button"
                     onClick={() => setGameType(g.value)}
