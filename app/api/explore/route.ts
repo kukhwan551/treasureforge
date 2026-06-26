@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     .select(`
       id, title, description, difficulty, target_age,
       order_mode, time_limit_sec, share_code,
-      compass_assist, created_at,
+      compass_assist, created_at, treasure_value,
       reward_expires_at, reward_limit, reward_claimed_count,
       maps ( public_url )
     `, { count: "exact" })
