@@ -5,7 +5,7 @@ import type { PostPuzzle } from "./puzzle";
 
 export type GamePhase =
   | "loading" | "entry_code" | "intro"
-  | "exploring" | "mission" | "puzzle" | "photo" | "game" | "complete";
+  | "exploring" | "mission" | "puzzle" | "photo" | "game" | "video" | "complete";
 
 export type SignalLevel = 0 | 1 | 2 | 3 | 4;
 
