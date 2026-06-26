@@ -26,6 +26,7 @@ interface Game {
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
+  treasure_value: number | null;
 }
 
 interface PaginatedGames {
@@ -421,6 +422,15 @@ function GameCard({
             <span className="font-mono tracking-wider">{game.share_code}</span>
           </MetaChip>
         )}
+        {/* 보물의 가치 별점 */}
+        <div className="flex items-center gap-0.5" title={}>
+          {[1,2,3,4,5].map(i => (
+            <span key={i} style={{
+              fontSize: 14,
+              color: i <= (game.treasure_value ?? 3) ? "#b89a5a" : "#2a2924",
+            }}>★</span>
+          ))}
+        </div>
         <span className="ml-auto text-[11px] text-[#3a3830] tabular-nums">
           {new Date(game.updated_at).toLocaleDateString("ko-KR", {
             month: "short", day: "numeric",

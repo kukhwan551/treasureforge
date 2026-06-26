@@ -48,6 +48,7 @@ interface FormState {
   is_public: boolean;
   reward_expires_at: string;
   reward_limit: string;
+  treasure_value: number;
   obstacle_type: string;
   obstacle_level: string;
 }
@@ -114,6 +115,7 @@ export default function EditGamePage() {
     is_public: false,
     reward_expires_at: "",
     reward_limit: "",
+    treasure_value: 3,
     obstacle_type: "none",
     obstacle_level: "easy",
   });
@@ -147,6 +149,7 @@ export default function EditGamePage() {
         is_public: g.is_public ?? false,
         reward_expires_at: g.reward_expires_at ? new Date(g.reward_expires_at).toISOString().slice(0,16) : "",
         reward_limit: g.reward_limit != null ? String(g.reward_limit) : "",
+        treasure_value: g.treasure_value ?? 3,
         obstacle_type: g.obstacle_type ?? "none",
         obstacle_level: g.obstacle_level ?? "easy",
       });
@@ -524,6 +527,31 @@ export default function EditGamePage() {
           {/* ── 완료 보상 ── */}
           <Section title="완료 보상">
             <p className="text-xs text-[#5a5650]">모든 포스트를 완료한 참여자에게 보여줄 보상입니다.</p>
+
+            {/* 보물의 가치 별점 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#c4bfb4]">
+                보물의 가치
+                <span className="ml-1.5 text-xs text-[#5a5650]">(게임 목록에 별로 표시됩니다)</span>
+              </label>
+              <div className="flex items-center gap-3">
+                {[1,2,3,4,5].map(i => (
+                  <button key={i} type="button"
+                    onClick={() => setForm(f => ({ ...f, treasure_value: i }))}
+                    className="transition-all active:scale-90 hover:scale-110"
+                    title={`${i}점`}>
+                    <span style={{
+                      fontSize: 32,
+                      color: i <= form.treasure_value ? "#b89a5a" : "#2a2924",
+                      textShadow: i <= form.treasure_value ? "0 0 8px rgba(184,154,90,0.4)" : "none",
+                    }}>★</span>
+                  </button>
+                ))}
+                <span className="text-sm text-[#7a756c] ml-2">
+                  {["", "최소 보상", "소소한 보상", "보통 보상", "귀한 보물", "최고의 보물"][form.treasure_value]}
+                </span>
+              </div>
+            </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-[#c4bfb4]">보상 종류</label>
