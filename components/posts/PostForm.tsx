@@ -286,42 +286,41 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
 
           {/* ── 게임 설정 ── */}
           {missionType === "game" && (
-            <div className="rounded-xl border border-[#2a2924] bg-[#18181a] p-4 space-y-3">
-              <p className="text-sm font-medium text-[#c4bfb4]">🎮 게임 선택</p>
-              <div className="grid grid-cols-1 gap-2">
-                {([
-                  { value: "mole",   label: "🐹 두더지 잡기", desc: "두더지를 탭해서 잡기" },
-                  { value: "tetris", label: "🟦 테트리스",     desc: "블록 3줄 클리어" },
-                  { value: "brick",  label: "🧱 벽돌깨기",    desc: "공으로 벽돌 15개 파괴" },
-                  { value: "memory", label: "🃏 기억력 게임",   desc: "카드 짝 맞추기" },
-                  { value: "snake",  label: "🐍 스네이크",     desc: "먹이 5개 먹으면 통과" },
-                ] as const).map(g => (
-                  <button key={g.value} type="button"
-                    onClick={() => setGameType(g.value)}
-                    className={[
-                      "w-full text-left rounded-xl border px-4 py-3 transition-all",
-                      gameType === g.value
-                        ? "border-[#b89a5a] bg-[#b89a5a]/15 text-[#d4b06a]"
-                        : "border-[#2a2924] bg-[#141414] text-[#c4bfb4] hover:border-[#b89a5a]/30"
-                    ].join(" ")}>
-                    <span className="font-medium">{g.label}</span>
-                    <span className="ml-2 text-xs text-[#5a5650]">{g.desc}</span>
-                  </button>
-                ))}
+            <div className="space-y-3">
+              <div className="rounded-xl border border-[#2a2924] bg-[#18181a] p-4 space-y-3">
+                <p className="text-sm font-medium text-[#c4bfb4]">🎮 게임 선택</p>
+                <div className="grid grid-cols-1 gap-2">
+                  {([
+                    { value: "mole",   label: "🐹 두더지 잡기", desc: "두더지를 탭해서 잡기" },
+                    { value: "tetris", label: "🟦 테트리스",     desc: "블록 목표 줄 클리어" },
+                    { value: "brick",  label: "🧱 벽돌깨기",    desc: "공으로 벽돌 모두 파괴" },
+                    { value: "memory", label: "🃏 기억력 게임",  desc: "카드 모두 맞추기" },
+                    { value: "snake",  label: "🐍 스네이크",     desc: "먹이 목표 수 먹기" },
+                  ] as const).map(g => (
+                    <button key={g.value} type="button"
+                      onClick={() => setGameType(g.value)}
+                      className={[
+                        "w-full text-left rounded-xl border px-4 py-3 transition-all",
+                        gameType === g.value
+                          ? "border-[#b89a5a] bg-[#b89a5a]/15 text-[#d4b06a]"
+                          : "border-[#2a2924] bg-[#141414] text-[#c4bfb4] hover:border-[#b89a5a]/30"
+                      ].join(" ")}>
+                      <span className="font-medium">{g.label}</span>
+                      <span className="ml-2 text-xs text-[#5a5650]">{g.desc}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* 목표값 설정 */}
-            {missionType === "game" && (
               <div className="rounded-xl border border-[#2a2924] bg-[#18181a] p-4 space-y-2">
                 <label className="block text-sm font-medium text-[#c4bfb4]">
                   🎯 통과 목표값
                   <span className="ml-1 text-[#5a5650] text-xs">
-                    {gameType === "mole" && "(두더지 마리 수, 기본 30)"}
+                    {gameType === "mole"   && "(두더지 마리 수, 기본 30)"}
                     {gameType === "tetris" && "(클리어 줄 수, 기본 10)"}
-                    {gameType === "brick" && "(깰 벽돌 수, 기본 전체)"}
+                    {gameType === "brick"  && "(깰 벽돌 수, 기본 전체)"}
                     {gameType === "memory" && "(제한 없음 - 모두 맞히면 통과)"}
-                    {gameType === "snake" && "(먹이 수, 기본 5)"}
+                    {gameType === "snake"  && "(먹이 수, 기본 5)"}
                   </span>
                 </label>
                 {gameType !== "memory" && (
@@ -329,10 +328,10 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                     value={gameTarget || ""}
                     onChange={e => setGameTarget(Number(e.target.value))}
                     placeholder={
-                      gameType === "mole" ? "기본값: 30" :
+                      gameType === "mole"   ? "기본값: 30" :
                       gameType === "tetris" ? "기본값: 10" :
-                      gameType === "brick" ? "기본값: 전체(32)" :
-                      gameType === "snake" ? "기본값: 5" : ""
+                      gameType === "brick"  ? "기본값: 전체(32)" :
+                      gameType === "snake"  ? "기본값: 5" : ""
                     }
                     className="w-full rounded-xl border border-[#2a2924] bg-[#141414] px-4 py-3 text-[#e8e4d9] text-sm focus:outline-none focus:border-[#b89a5a]"
                   />
@@ -341,10 +340,10 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                   <p className="text-[#5a5650] text-sm">카드를 모두 맞히면 자동 통과됩니다.</p>
                 )}
               </div>
-            )}
-          </div>
+            </div>
           )}
 
+          {/* ── 저장 버튼 ── */}
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onCancel}
               className="rounded-xl border border-[#2a2924] px-4 py-2.5 text-sm
