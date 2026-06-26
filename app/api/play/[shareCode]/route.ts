@@ -42,7 +42,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       id, name, description,
       coord_x, coord_y, radius,
       order_index, order_mode,
-      mission_type, post_game_type, post_game_target,
+      mission_type, post_game_type, post_game_target, post_video_url,
       time_limit_sec, score, is_active,
       quizzes (
         id, type, question, answer, options,

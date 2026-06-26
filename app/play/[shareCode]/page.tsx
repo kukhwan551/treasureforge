@@ -11,7 +11,8 @@ import { CHARACTERS, type CharacterId } from "@/types/character";
 import HUD, { HUD_HEIGHT } from "./components/HUD";
 import MissionPopup     from "./components/MissionPopup";
 import PuzzlePopup       from "@/components/puzzle/PuzzlePopup";
-import PhotoMissionPopup from "@/components/photo/PhotoMissionPopup";
+import PhotoMissionPopup   from "@/components/photo/PhotoMissionPopup";
+import VideoMissionPopup   from "@/components/video/VideoMissionPopup";
 import GamePopup, { GameType } from "@/components/games/GamePopup";
 import TreasureComplete from "./components/TreasureComplete";
 import ConfettiCanvas   from "./components/ConfettiCanvas";
@@ -275,6 +276,14 @@ export default function PlayPage() {
     if (missionType === "photo") {
       pauseBubbleRef.current = true;
       setPhase("photo");
+      return;
+    }
+
+    if (missionType === "video") {
+      pauseBubbleRef.current = true;
+      setObstaclePaused(true);
+      setActivePost(post);
+      setPhase("video");
       return;
     }
 
@@ -639,6 +648,43 @@ export default function PlayPage() {
         />
       )}
 
+      {/* ★ 영상 팝업 */}
+      {(phase as string) === "video" && activePost && (
+        <VideoMissionPopup
+          postName={activePost.name}
+          videoUrl={(activePost as PostWithQuiz & { post_video_url?: string }).post_video_url ?? ""}
+          seniorMode={seniorMode}
+          onComplete={() => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(true);
+            setActivePost(null);
+            setPhase("exploring");
+            if (soundEnabled) playCorrectSound();
+            setConfettiActive(true);
+            setResultOverlay("correct");
+            const px = Number(activePost.coord_x) ?? 50;
+            const py = Number(activePost.coord_y) ?? 50;
+            setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
+            const g = gameRef.current;
+            const completed = completedIdsRef.current;
+            const isLast = g ? (completed.size + 1 >= g.posts.length) : false;
+            const delay = isLast ? 1500 : 5600;
+            setTimeout(() => {
+              setConfettiActive(false);
+              setKeyFly((k) => ({ ...k, active: false }));
+              setObstaclePaused(false);
+              handlePostComplete(activePost, 0);
+            }, delay);
+          }}
+          onSkip={() => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(false);
+            setActivePost(null);
+            setPhase("exploring");
+          }}
+        />
+      )}
+
       {/* ★ 게임 팝업 */}
       {phase === "game" && activePost && (
         <GamePopup
@@ -666,6 +712,43 @@ export default function PlayPage() {
               setKeyFly((k) => ({ ...k, active: false }));
               setObstaclePaused(false);
               handlePostComplete(activePost, gameScore);
+            }, delay);
+          }}
+          onSkip={() => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(false);
+            setActivePost(null);
+            setPhase("exploring");
+          }}
+        />
+      )}
+
+      {/* ★ 영상 팝업 */}
+      {(phase as string) === "video" && activePost && (
+        <VideoMissionPopup
+          postName={activePost.name}
+          videoUrl={(activePost as PostWithQuiz & { post_video_url?: string }).post_video_url ?? ""}
+          seniorMode={seniorMode}
+          onComplete={() => {
+            pauseBubbleRef.current = false;
+            setObstaclePaused(true);
+            setActivePost(null);
+            setPhase("exploring");
+            if (soundEnabled) playCorrectSound();
+            setConfettiActive(true);
+            setResultOverlay("correct");
+            const px = Number(activePost.coord_x) ?? 50;
+            const py = Number(activePost.coord_y) ?? 50;
+            setTimeout(() => setKeyFly({ active: true, x: px, y: py }), 300);
+            const g = gameRef.current;
+            const completed = completedIdsRef.current;
+            const isLast = g ? (completed.size + 1 >= g.posts.length) : false;
+            const delay = isLast ? 1500 : 5600;
+            setTimeout(() => {
+              setConfettiActive(false);
+              setKeyFly((k) => ({ ...k, active: false }));
+              setObstaclePaused(false);
+              handlePostComplete(activePost, 0);
             }, delay);
           }}
           onSkip={() => {

@@ -38,7 +38,7 @@ function getPhotoMission(initial: Post | undefined) {
   if (!pm || pm.length === 0) return { keywords: "", guide_text: "" };
   return { keywords: pm[0]?.keywords ?? "", guide_text: pm[0]?.guide_text ?? "" };
 }
-type MissionType = "quiz" | "puzzle" | "photo" | "game";
+type MissionType = "quiz" | "puzzle" | "photo" | "game" | "video";
 
 export default function PostForm({ gameId, game, initial, onSaved, onCancel }: PostFormProps) {
   const supabase = createClient();
@@ -52,6 +52,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
   );
     const [gameType, setGameType] = useState<string>((initial as Post & { post_game_type?: string })?.post_game_type ?? "mole");
   const [gameTarget, setGameTarget] = useState<number>((initial as Post & { post_game_target?: number })?.post_game_target ?? 0);
+  const [videoUrl, setVideoUrl] = useState<string>((initial as Post & { post_video_url?: string })?.post_video_url ?? "");
   const [photoKeywords,  setPhotoKeywords]  = useState(getPhotoMission(initial).keywords);
   const [photoGuideText, setPhotoGuideText] = useState(getPhotoMission(initial).guide_text);
   
@@ -99,6 +100,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
         score,
         mission_type:   missionType,
         ...(missionType === "game" ? { post_game_type: gameType, post_game_target: gameTarget || null } : {}),
+        ...(missionType === "video" ? { post_video_url: videoUrl || null } : {}),
       };
       let saved: Post;
       if (currentPost?.id) {
@@ -230,6 +232,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                 { value: "puzzle" as MissionType, label: "🧩 그림 퍼즐", desc: "퍼즐을 맞춰서 통과" },
                 { value: "photo"  as MissionType, label: "📸 인증샷",    desc: "사진으로 장소 인증" },
                 { value: "game"   as MissionType, label: "🎮 게임",       desc: "미니게임으로 통과" },
+                { value: "video"  as MissionType, label: "🎬 영상시청",   desc: "영상을 보고 통과" },
               ] as const).map((opt) => {
                 const sel = missionType === opt.value;
                 return (
@@ -340,6 +343,25 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                   <p className="text-[#5a5650] text-sm">카드를 모두 맞히면 자동 통과됩니다.</p>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ── 영상 설정 ── */}
+          {missionType === "video" && (
+            <div className="rounded-xl border border-[#2a2924] bg-[#18181a] p-4 space-y-3">
+              <p className="text-sm font-medium text-[#c4bfb4]">🎬 영상 URL 설정</p>
+              <p className="text-xs text-[#5a5650]">
+                YouTube, Vimeo 링크 또는 직접 영상 파일 URL을 입력하세요.
+              </p>
+              <input type="url"
+                value={videoUrl}
+                onChange={e => setVideoUrl(e.target.value)}
+                placeholder="예: https://www.youtube.com/watch?v=..."
+                className="w-full rounded-xl border border-[#2a2924] bg-[#141414] px-4 py-3 text-[#e8e4d9] text-sm focus:outline-none focus:border-[#b89a5a]"
+              />
+              <p className="text-xs text-[#5a5650]">
+                ※ YouTube/Vimeo: 30초 이상 시청 시 완료 · 직접 파일: 95% 이상 재생 시 완료
+              </p>
             </div>
           )}
 
