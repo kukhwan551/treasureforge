@@ -293,7 +293,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                   { value: "tetris", label: "🟦 테트리스",     desc: "블록 3줄 클리어" },
                   { value: "brick",  label: "🧱 벽돌깨기",    desc: "공으로 벽돌 15개 파괴" },
                   { value: "memory", label: "🃏 기억력 게임",   desc: "카드 짝 맞추기" },
-                  { value: "jump",   label: "🐦 점프 게임",   desc: "장애물 5개 통과" },
+                  { value: "snake",  label: "🐍 스네이크",     desc: "먹이 5개 먹으면 통과" },
                 ] as const).map(g => (
                   <button key={g.value} type="button"
                     onClick={() => setGameType(g.value)}
