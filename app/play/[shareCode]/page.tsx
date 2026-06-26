@@ -261,7 +261,7 @@ export default function PlayPage() {
     if (!nearbyIds.has(post.id) || completedIds.has(post.id)) return;
     setActivePost(post);
 
-    const missionType = post.mission_type ?? "quiz";
+    const missionType = (post.mission_type ?? "quiz") as string;
 
     if (missionType === "puzzle") {
       const puzzle = post.post_puzzles?.[0];
