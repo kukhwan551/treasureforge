@@ -53,6 +53,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
     const [gameType, setGameType] = useState<string>((initial as Post & { post_game_type?: string })?.post_game_type ?? "mole");
   const [gameTarget, setGameTarget] = useState<number>((initial as Post & { post_game_target?: number })?.post_game_target ?? 0);
   const [videoUrl, setVideoUrl] = useState<string>((initial as Post & { post_video_url?: string })?.post_video_url ?? "");
+  const [videoRequiredSec, setVideoRequiredSec] = useState<number>((initial as Post & { post_video_required_sec?: number })?.post_video_required_sec ?? 30);
   const [photoKeywords,  setPhotoKeywords]  = useState(getPhotoMission(initial).keywords);
   const [photoGuideText, setPhotoGuideText] = useState(getPhotoMission(initial).guide_text);
   
@@ -100,7 +101,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
         score,
         mission_type:   missionType,
         ...(missionType === "game" ? { post_game_type: gameType, post_game_target: gameTarget || null } : {}),
-        ...(missionType === "video" ? { post_video_url: videoUrl || null } : {}),
+        ...(missionType === "video" ? { post_video_url: videoUrl || null, post_video_required_sec: videoRequiredSec } : {}),
       };
       let saved: Post;
       if (currentPost?.id) {
@@ -359,9 +360,32 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                 placeholder="예: https://www.youtube.com/watch?v=..."
                 className="w-full rounded-xl border border-[#2a2924] bg-[#141414] px-4 py-3 text-[#e8e4d9] text-sm focus:outline-none focus:border-[#b89a5a]"
               />
-              <p className="text-xs text-[#5a5650]">
-                ※ YouTube/Vimeo: 30초 이상 시청 시 완료 · 직접 파일: 95% 이상 재생 시 완료
-              </p>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-[#c4bfb4]">
+                  ⏱ 시청 완료 기준
+                  <span className="ml-1 text-xs text-[#5a5650]">(초, 직접파일은 95% 재생)</span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <input type="number" min={5} max={600}
+                    value={videoRequiredSec}
+                    onChange={e => setVideoRequiredSec(Number(e.target.value))}
+                    className="w-28 rounded-xl border border-[#2a2924] bg-[#141414] px-4 py-3 text-[#e8e4d9] text-sm focus:outline-none focus:border-[#b89a5a]"
+                  />
+                  <span className="text-sm text-[#7a756c]">초 이상 시청 시 완료</span>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {[15,30,60,120,180].map(s => (
+                    <button key={s} type="button"
+                      onClick={() => setVideoRequiredSec(s)}
+                      className={`rounded-lg border px-3 py-1 text-xs transition-all
+                        ${videoRequiredSec === s
+                          ? "border-[#b89a5a] bg-[#b89a5a]/15 text-[#d4b06a]"
+                          : "border-[#2a2924] text-[#5a5650] hover:border-[#b89a5a]/30"}`}>
+                      {s >= 60 ? `${s/60}분` : `${s}초`}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

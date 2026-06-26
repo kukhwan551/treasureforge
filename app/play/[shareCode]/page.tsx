@@ -653,6 +653,7 @@ export default function PlayPage() {
         <VideoMissionPopup
           postName={activePost.name}
           videoUrl={(activePost as PostWithQuiz & { post_video_url?: string }).post_video_url ?? ""}
+          requiredSec={(activePost as PostWithQuiz & { post_video_required_sec?: number }).post_video_required_sec ?? 30}
           seniorMode={seniorMode}
           onComplete={() => {
             pauseBubbleRef.current = false;
@@ -728,6 +729,7 @@ export default function PlayPage() {
         <VideoMissionPopup
           postName={activePost.name}
           videoUrl={(activePost as PostWithQuiz & { post_video_url?: string }).post_video_url ?? ""}
+          requiredSec={(activePost as PostWithQuiz & { post_video_required_sec?: number }).post_video_required_sec ?? 30}
           seniorMode={seniorMode}
           onComplete={() => {
             pauseBubbleRef.current = false;
