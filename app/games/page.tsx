@@ -423,7 +423,7 @@ function GameCard({
           </MetaChip>
         )}
         {/* 보물의 가치 별점 */}
-        <div className="flex items-center gap-0.5" title={}>
+        <div className="flex items-center gap-0.5">
           {[1,2,3,4,5].map(i => (
             <span key={i} style={{
               fontSize: 14,
