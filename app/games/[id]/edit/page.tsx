@@ -31,6 +31,7 @@ interface Game {
   reward_claimed_count: number;
   obstacle_type: string;
   obstacle_level: string;
+  treasure_value: number | null;
 }
 
 interface FormState {
