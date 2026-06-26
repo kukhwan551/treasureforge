@@ -269,6 +269,7 @@ export default function EditGamePage() {
             reward_limit: form.reward_limit ? parseInt(form.reward_limit) : null,
             obstacle_type: form.obstacle_type,
             obstacle_level: form.obstacle_level,
+            treasure_value: form.treasure_value,
           }),
         });
         const json = await res.json();
