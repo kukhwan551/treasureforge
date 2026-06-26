@@ -50,28 +50,37 @@ export default function VideoMissionPopup({ postName, videoUrl, requiredSec = 30
     function onMessage(e: MessageEvent) {
       try {
         const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-        // YouTube Player State: 1 = playing, 2 = paused, 0 = ended
-        if (data?.event === "infoDelivery" && data?.info?.playerState !== undefined) {
-          const state = data.info.playerState;
-          if (state === 1) startTimer();   // 재생 시작
-          else if (state === 2 || state === 0) pauseTimer(); // 일시정지/종료
+        if (!data) return;
+        // YouTube IFrame API playerState: 1=playing, 2=paused, 0=ended
+        const state = data?.info?.playerState ?? data?.playerState;
+        if (state === 1) startTimer();
+        else if (state === 2 || state === 0) pauseTimer();
+        // 이벤트 방식
+        if (data?.event === "onStateChange") {
+          if (data?.info === 1) startTimer();
+          else if (data?.info === 2 || data?.info === 0) pauseTimer();
         }
-        // 구형 YouTube API
-        if (data?.info?.playerState === 1) startTimer();
-        else if (data?.info?.playerState === 2) pauseTimer();
       } catch {}
     }
 
     window.addEventListener("message", onMessage);
 
-    // YouTube API 활성화 요청
-    const t = setTimeout(() => {
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ event: "listening" }), "*"
-      );
-    }, 1000);
+    // YouTube IFrame API 활성화 (로드 후 반복 요청)
+    const intervals = [500, 1000, 2000, 3000].map(delay =>
+      setTimeout(() => {
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({ event: "listening", id: 1 }), "*"
+        );
+        iframeRef.current?.contentWindow?.postMessage(
+          '{"event":"listening","id":1}', "*"
+        );
+      }, delay)
+    );
 
-    return () => { window.removeEventListener("message", onMessage); clearTimeout(t); };
+    return () => {
+      window.removeEventListener("message", onMessage);
+      intervals.forEach(clearTimeout);
+    };
   }, [type]); // eslint-disable-line
 
   // Vimeo postMessage로 재생 감지
@@ -153,14 +162,20 @@ export default function VideoMissionPopup({ postName, videoUrl, requiredSec = 30
 
           {/* YouTube */}
           {type === "youtube" && (
-            <iframe ref={iframeRef} src={embedUrl} className="w-full h-full"
-              allow="autoplay; fullscreen" allowFullScreen/>
+            <div className="relative w-full h-full"
+              onClick={() => { if (!playing && !watchedRef.current) startTimer(); }}>
+              <iframe ref={iframeRef} src={embedUrl} className="w-full h-full"
+                allow="autoplay; fullscreen" allowFullScreen/>
+            </div>
           )}
 
           {/* Vimeo */}
           {type === "vimeo" && (
-            <iframe ref={iframeRef} src={embedUrl} className="w-full h-full"
-              allow="autoplay; fullscreen" allowFullScreen/>
+            <div className="relative w-full h-full"
+              onClick={() => { if (!playing && !watchedRef.current) startTimer(); }}>
+              <iframe ref={iframeRef} src={embedUrl} className="w-full h-full"
+                allow="autoplay; fullscreen" allowFullScreen/>
+            </div>
           )}
 
           {/* 직접 파일 */}
