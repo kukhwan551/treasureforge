@@ -28,12 +28,11 @@ export interface Post {
   hint_3: string | null;
   score: number;
   is_active: boolean;
-  mission_type?: "quiz" | "puzzle" | "photo" | "game";
+  mission_type?: "quiz" | "puzzle" | "photo";
   created_at: string;
   updated_at: string;
   quizzes?: Quiz[];
   post_photo_missions?: { id?: string; keywords: string; guide_text: string; hint_image_url?: string }[];
-  post_game_type?: string; // 게임 타입: mole|dodge|memory|typing|target
 }
 
 export interface CreatePostInput {

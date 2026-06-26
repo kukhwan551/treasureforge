@@ -643,6 +643,7 @@ export default function PlayPage() {
       {phase === "game" && activePost && (
         <GamePopup
           gameType={((activePost as PostWithQuiz & { post_game_type?: string }).post_game_type ?? "mole") as GameType}
+          target={(activePost as PostWithQuiz & { post_game_target?: number }).post_game_target ?? undefined}
           postName={activePost.name}
           seniorMode={seniorMode}
           onComplete={(gameScore) => {
@@ -680,6 +681,7 @@ export default function PlayPage() {
       {phase === "game" && activePost && (
         <GamePopup
           gameType={((activePost as PostWithQuiz & { post_game_type?: string }).post_game_type ?? "mole") as GameType}
+          target={(activePost as PostWithQuiz & { post_game_target?: number }).post_game_target ?? undefined}
           postName={activePost.name}
           seniorMode={seniorMode}
           onComplete={(gameScore) => {

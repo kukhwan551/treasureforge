@@ -51,6 +51,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
     (initial?.mission_type as MissionType) ?? "quiz"
   );
     const [gameType, setGameType] = useState<string>((initial as Post & { post_game_type?: string })?.post_game_type ?? "mole");
+  const [gameTarget, setGameTarget] = useState<number>((initial as Post & { post_game_target?: number })?.post_game_target ?? 0);
   const [photoKeywords,  setPhotoKeywords]  = useState(getPhotoMission(initial).keywords);
   const [photoGuideText, setPhotoGuideText] = useState(getPhotoMission(initial).guide_text);
   
@@ -97,7 +98,7 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
         time_limit_sec: timeLimitSec === "" ? null : Number(timeLimitSec),
         score,
         mission_type:   missionType,
-        ...(missionType === "game" ? { post_game_type: gameType } : {}),
+        ...(missionType === "game" ? { post_game_type: gameType, post_game_target: gameTarget || null } : {}),
       };
       let saved: Post;
       if (currentPost?.id) {
@@ -309,6 +310,39 @@ export default function PostForm({ gameId, game, initial, onSaved, onCancel }: P
                 ))}
               </div>
             </div>
+
+            {/* 목표값 설정 */}
+            {missionType === "game" && (
+              <div className="rounded-xl border border-[#2a2924] bg-[#18181a] p-4 space-y-2">
+                <label className="block text-sm font-medium text-[#c4bfb4]">
+                  🎯 통과 목표값
+                  <span className="ml-1 text-[#5a5650] text-xs">
+                    {gameType === "mole" && "(두더지 마리 수, 기본 30)"}
+                    {gameType === "tetris" && "(클리어 줄 수, 기본 10)"}
+                    {gameType === "brick" && "(깰 벽돌 수, 기본 전체)"}
+                    {gameType === "memory" && "(제한 없음 - 모두 맞히면 통과)"}
+                    {gameType === "snake" && "(먹이 수, 기본 5)"}
+                  </span>
+                </label>
+                {gameType !== "memory" && (
+                  <input type="number" min={1} max={999}
+                    value={gameTarget || ""}
+                    onChange={e => setGameTarget(Number(e.target.value))}
+                    placeholder={
+                      gameType === "mole" ? "기본값: 30" :
+                      gameType === "tetris" ? "기본값: 10" :
+                      gameType === "brick" ? "기본값: 전체(32)" :
+                      gameType === "snake" ? "기본값: 5" : ""
+                    }
+                    className="w-full rounded-xl border border-[#2a2924] bg-[#141414] px-4 py-3 text-[#e8e4d9] text-sm focus:outline-none focus:border-[#b89a5a]"
+                  />
+                )}
+                {gameType === "memory" && (
+                  <p className="text-[#5a5650] text-sm">카드를 모두 맞히면 자동 통과됩니다.</p>
+                )}
+              </div>
+            )}
+          </div>
           )}
 
           <div className="flex justify-end gap-2">
