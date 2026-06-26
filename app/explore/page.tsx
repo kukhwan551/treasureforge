@@ -121,12 +121,12 @@ export default function ExplorePage() {
                     )}
 
                     {/* 보물의 가치 별점 */}
-                  <div className="absolute bottom-2 left-2 flex items-center gap-0.5">
+                  <div className="absolute bottom-2 left-2 flex items-center gap-0.5
+                    rounded-full border border-[#b89a5a]/40 bg-[#0f0f10]/85 px-2 py-0.5">
                     {[1,2,3,4,5].map(i => (
                       <span key={i} style={{
                         fontSize: 13,
                         color: i <= (g.treasure_value ?? 3) ? "#b89a5a" : "rgba(255,255,255,0.2)",
-                        textShadow: i <= (g.treasure_value ?? 3) ? "0 0 6px rgba(184,154,90,0.6)" : "none",
                       }}>★</span>
                     ))}
                   </div>
