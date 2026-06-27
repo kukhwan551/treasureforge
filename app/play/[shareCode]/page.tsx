@@ -59,6 +59,7 @@ export default function PlayPage() {
   const [entryInput, setEntryInput] = useState("");
   const [entryError, setEntryError] = useState("");
   const [session, setSession]     = useState<PlayerSession | null>(null);
+  const [totalPoints, setTotalPoints] = useState(0); // players.total_points 누적
   const [alreadyClaimed, setAlreadyClaimed] = useState(false);
 
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
@@ -209,6 +210,12 @@ export default function PlayPage() {
     if (json.error) return;
     setSession(json.data);
     if (json.data?.already_claimed) setAlreadyClaimed(true);
+    // 누적 포인트 가져오기
+    if (json.data?.player_id) {
+      const ptRes = await fetch(`/api/play/sessions?player_id=${json.data.player_id}`);
+      const ptJson = await ptRes.json();
+      if (ptJson.data?.total_points !== undefined) setTotalPoints(ptJson.data.total_points);
+    }
     if (soundEnabled) initAudio();
     setPhase("exploring");
   }
@@ -429,13 +436,14 @@ export default function PlayPage() {
     if (!session) return;
     const newCompleted    = new Set(completedIdsRef.current).add(post.id);
     const newKeys         = (session.keys ?? 0) + 1;
-    const newScore        = (session.score ?? 0) + 10 + quizScore;
+    const newScore        = newCompleted.size * 10;
     const newCompletedArr = Array.from(newCompleted);
 
     if (soundEnabled) playKeySound();
     setCompletedIds(newCompleted);
     completedIdsRef.current = newCompleted;
     setSession((s) => s ? { ...s, keys: newKeys, score: newScore, completed_post_ids: newCompletedArr } : null);
+    setTotalPoints(p => p + 10);
 
     await fetch("/api/play/sessions", {
       method: "PATCH",
@@ -459,9 +467,26 @@ export default function PlayPage() {
   }
 
   function handleObstacleHit() {
+    setSession(s => {
+      if (!s) return s;
+      const lostPoints = s.score ?? 0; // 이번 게임에서 얻은 점수 전체 삭감
+      setTotalPoints(p => Math.max(0, p - lostPoints));
+      // DB 업데이트 (비동기)
+      fetch("/api/play/sessions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: s.id,
+          keys: 0,
+          score: 0,
+          completed_post_ids: [],
+          obstacle_hit_penalty: lostPoints, // 서버에서 total_points 차감
+        }),
+      });
+      return { ...s, keys: 0, score: 0, completed_post_ids: [] };
+    });
     setCompletedIds(new Set());
     completedIdsRef.current = new Set();
-    setSession((s) => s ? { ...s, keys: 0, score: 0, completed_post_ids: [] } : null);
   }
 
   function handleRestart() { clearExploreState(); setSession(null); setPhase("intro"); }
@@ -568,7 +593,7 @@ export default function PlayPage() {
             completed={completedIds.size}
             keys={session.keys}
             nickname={session.nickname}
-            score={session.score}
+            score={totalPoints}
             signalLevel={signalLevel}
             seniorMode={seniorMode}
             soundEnabled={soundEnabled}
