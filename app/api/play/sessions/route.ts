@@ -176,6 +176,24 @@ export async function PATCH(req: NextRequest) {
     if (body.finished_at && data?.game_id) {
       await supabase.rpc("increment_reward_count", { game_id: data.game_id });
     }
+
+    // 포스트 완료 시 포인트 적립 (player_id 있을 때만)
+    if (body.completed_post_ids && data?.player_id) {
+      const prevSession = await supabase
+        .from("player_sessions")
+        .select("completed_post_ids")
+        .eq("id", session_id)
+        .single();
+      const prev = prevSession.data?.completed_post_ids ?? [];
+      const newCount = body.completed_post_ids.length - prev.length;
+      if (newCount > 0) {
+        await supabase.rpc("increment_player_points", {
+          p_player_id: data.player_id,
+          p_points: newCount * 10,
+        });
+      }
+    }
+
     return NextResponse.json({ data, error: null });
   } catch (err) {
     const message = err instanceof Error ? err.message : "서버 오류가 발생했습니다.";

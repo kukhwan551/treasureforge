@@ -16,6 +16,8 @@ interface HUDProps {
   gameTimeLeft: number | null;
   elapsedSec: number;
   zoom: number;
+  nickname?: string;
+  score?: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onToggleSound: () => void;
@@ -33,14 +35,15 @@ function fmtTime(sec: number) {
   return `${m}:${s}`;
 }
 
-const HUD_HEIGHT = 56;
+const HUD_HEIGHT = 72;
 export { HUD_HEIGHT };
 
 export default function HUD({
   gameTitle, total, completed, keys, signalLevel,
   seniorMode, soundEnabled,
   gameTimeLeft, elapsedSec,
-  zoom, onZoomIn, onZoomOut,
+  zoom, nickname, score,
+  onZoomIn, onZoomOut,
   onToggleSound, onExit,
 }: HUDProps) {
   const progress     = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -160,6 +163,18 @@ export default function HUD({
             </button>
           </div>
         </div>
+
+        {/* 닉네임 + 포인트 */}
+        {nickname && (
+          <div className="flex items-center gap-2 px-0.5 pb-0.5">
+            <span className="text-[10px] text-[#5a5650] truncate flex-1 min-w-0">
+              👤 {nickname}
+            </span>
+            <span className="text-[10px] font-bold text-[#b89a5a] tabular-nums shrink-0">
+              🏅 {(score ?? 0)}pt
+            </span>
+          </div>
+        )}
 
         {/* 진행률 바 */}
         <div className="w-full h-1 bg-[#2a2924] rounded-full overflow-hidden mb-1.5">

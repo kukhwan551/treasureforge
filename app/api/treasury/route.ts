@@ -55,8 +55,35 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // 3. 포인트 및 랭킹 조회
+    const { data: playerFull } = await supabase
+      .from("players")
+      .select("id, nickname, contact, total_points")
+      .eq("id", player.id)
+      .single();
+
+    const { data: rankData } = await supabase
+      .from("player_rankings")
+      .select("rank")
+      .eq("id", player.id)
+      .maybeSingle();
+
+    // 4. 전체 포인트 TOP 10
+    const { data: topPlayers } = await supabase
+      .from("player_rankings")
+      .select("id, nickname, total_points, rank")
+      .order("rank", { ascending: true })
+      .limit(10);
+
     return NextResponse.json({
-      data: { player, sessions: sessions ?? [] },
+      data: {
+        player: {
+          ...playerFull,
+          rank: rankData?.rank ?? null,
+        },
+        sessions: sessions ?? [],
+        topPlayers: topPlayers ?? [],
+      },
       error: null,
     });
   } catch (err) {
