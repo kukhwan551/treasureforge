@@ -772,6 +772,7 @@ export default function ExploreMap({
                     osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.4);
                     gain.gain.setValueAtTime(0.4, ac.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+                    osc.start(); osc.stop(ac.currentTime + 0.4);
                   } else if (obstacleType === "goblin") {
                     // 도깨비: 날카로운 충격음
                     osc.type = "sawtooth";
