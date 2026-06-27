@@ -514,9 +514,10 @@ export default function ExploreMap({
             } else if (obstacleType === "goblin") {
               // ── 뿔로 찌르는 도깨비 ──
               const sc = b.r / 16;
-              const charge = Math.abs(Math.sin(b.frame * 0.18)) * 3; // 돌진 앞뒤
+              const charge = Math.abs(Math.sin(b.frame * 0.18)) * 3;
               ctx.rotate(b.angle + Math.PI / 2);
               ctx.translate(0, -charge);
+              ctx.globalAlpha = 0.45; // 반투명
 
               // 몸통 (보라색)
               ctx.fillStyle = "#7c3aed";
@@ -598,9 +599,10 @@ export default function ExploreMap({
               // ── 잡아먹을 듯한 맹수 (호랑이) ──
               const sc = b.r / 16;
               const bob = Math.sin(b.frame * 0.12) * 1.5;
-              const jawOpen = (Math.sin(b.frame * 0.18) + 1) * 0.5; // 0~1 입벌림
+              const jawOpen = (Math.sin(b.frame * 0.18) + 1) * 0.5;
               ctx.rotate(b.angle + Math.PI / 2);
               ctx.translate(0, bob);
+              ctx.globalAlpha = 0.45; // 반투명
 
               // 몸통
               ctx.fillStyle = "#d97706";
@@ -677,6 +679,76 @@ export default function ExploreMap({
               ctx.beginPath(); ctx.moveTo(-6*sc, -1*sc); ctx.lineTo(-14*sc, 0);     ctx.stroke();
               ctx.beginPath(); ctx.moveTo(6*sc, -3*sc);  ctx.lineTo(14*sc, -4*sc);  ctx.stroke();
               ctx.beginPath(); ctx.moveTo(6*sc, -1*sc);  ctx.lineTo(14*sc, 0);      ctx.stroke();
+            } else if (obstacleType === "bomb") {
+              // ── 수뢰 폭탄 ──
+              const sc = b.r / 20;
+              const pulse = Math.sin(b.frame * 0.15) * 0.08 + 1; // 맥박
+              ctx.scale(pulse, pulse);
+              ctx.globalAlpha = 0.45; // 반투명
+
+              // 쇠공 본체 (구형 그라데이션)
+              const grad = ctx.createRadialGradient(-3*sc, -3*sc, 1*sc, 0, 0, 16*sc);
+              grad.addColorStop(0, "rgba(180,180,185,0.9)");
+              grad.addColorStop(0.4, "rgba(110,110,118,0.9)");
+              grad.addColorStop(1, "rgba(50,50,55,0.9)");
+              ctx.beginPath();
+              ctx.arc(0, 0, 16*sc, 0, Math.PI*2);
+              ctx.fillStyle = grad; ctx.fill();
+              ctx.strokeStyle = "rgba(60,60,65,0.8)"; ctx.lineWidth = 1.5*sc; ctx.stroke();
+
+              // 하이라이트
+              ctx.beginPath();
+              ctx.arc(-5*sc, -5*sc, 5*sc, 0, Math.PI*2);
+              ctx.fillStyle = "rgba(220,220,225,0.35)"; ctx.fill();
+
+              // 뿔들 (8방향)
+              const spikeLen = 8*sc;
+              const spikeR = 1.8*sc;
+              ctx.fillStyle = "rgba(80,80,88,0.9)";
+              for (let si = 0; si < 8; si++) {
+                const ang = (si / 8) * Math.PI * 2;
+                ctx.save();
+                ctx.rotate(ang);
+                ctx.beginPath();
+                ctx.moveTo(-spikeR, 14*sc);
+                ctx.lineTo(spikeR, 14*sc);
+                ctx.lineTo(0, 14*sc + spikeLen);
+                ctx.fill();
+                // 뿔 끝 구체
+                ctx.beginPath();
+                ctx.arc(0, 14*sc + spikeLen, spikeR*1.2, 0, Math.PI*2);
+                ctx.fillStyle = "rgba(60,60,68,0.9)"; ctx.fill();
+                ctx.fillStyle = "rgba(80,80,88,0.9)";
+                ctx.restore();
+              }
+              // 대각선 뿔 4개 (45도)
+              ctx.fillStyle = "rgba(90,90,98,0.8)";
+              for (let si = 0; si < 4; si++) {
+                const ang = (si / 4) * Math.PI * 2 + Math.PI/4;
+                ctx.save();
+                ctx.rotate(ang);
+                ctx.beginPath();
+                ctx.moveTo(-spikeR*0.8, 13*sc);
+                ctx.lineTo(spikeR*0.8, 13*sc);
+                ctx.lineTo(0, 13*sc + spikeLen*0.75);
+                ctx.fill();
+                ctx.restore();
+              }
+
+              // 도화선 (위쪽)
+              ctx.strokeStyle = "rgba(140,90,40,0.8)"; ctx.lineWidth = 1.5*sc;
+              ctx.lineCap = "round";
+              ctx.beginPath();
+              ctx.moveTo(0, -16*sc);
+              ctx.quadraticCurveTo(4*sc, -22*sc, 2*sc, -28*sc);
+              ctx.stroke();
+              // 도화선 불꽃 (깜빡임)
+              if (b.frame % 8 < 5) {
+                ctx.fillStyle = "rgba(255,200,50,0.9)";
+                ctx.beginPath(); ctx.arc(2*sc, -28*sc, 2.5*sc, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "rgba(255,120,20,0.7)";
+                ctx.beginPath(); ctx.arc(2*sc, -29*sc, 1.5*sc, 0, Math.PI*2); ctx.fill();
+              }
             }
 
             ctx.restore();
@@ -693,7 +765,14 @@ export default function ExploreMap({
                   const osc = ac.createOscillator();
                   const gain = ac.createGain();
                   osc.connect(gain); gain.connect(ac.destination);
-                  if (obstacleType === "goblin") {
+                  if (obstacleType === "bomb") {
+                    // 폭탄: 폭발음
+                    osc.type = "square";
+                    osc.frequency.setValueAtTime(150, ac.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.4, ac.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+                  } else if (obstacleType === "goblin") {
                     // 도깨비: 날카로운 충격음
                     osc.type = "sawtooth";
                     osc.frequency.setValueAtTime(300, ac.currentTime);

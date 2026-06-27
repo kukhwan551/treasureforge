@@ -644,6 +644,7 @@ export default function EditGamePage() {
                   <option value="bubble">🫧 비누방울</option>
                   <option value="goblin">👹 창 도깨비</option>
                   <option value="beast">🐯 맹수 호랑이</option>
+                  <option value="bomb">💣 수뢰 폭탄</option>
                 </select>
               </div>
               {form.obstacle_type !== "none" && (
